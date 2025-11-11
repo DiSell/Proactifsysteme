@@ -1,0 +1,40 @@
+# Ignorer les modules Node.js
+node_modules/
+
+# Ignorer les fichiers de configuration locaux
+.env
+.env.local
+.env.*.local
+
+# Ignorer les fichiers de log
+logs/
+*.log
+
+# Ignorer les fichiers de build
+dist/
+build/
+
+# Ignorer les fichiers temporaires
+*.tmp
+*.swp
+*.swo
+
+# Ignorer les fichiers de serveur ou de configuration sensibles
+/config/
+secrets/
+
+# Ignorer les fichiers de dépendances spécifiques à l’IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Ignorer les fichiers spécifiques au système
+.DS_Store
+Thumbs.db
+
+# Ignorer les fichiers de base de données locaux (tous les JSON)
+db/
+db.json
+leads.json
+conversations.json
