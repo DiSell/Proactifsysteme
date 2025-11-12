@@ -20,6 +20,7 @@ const axios = require('axios');
 const OpenAI = require('openai');
 const { encrypt, decrypt } = require('./encryption'); // ✅ ici
 const { sendAlertEmail, showMaintenanceAlert } = require('./alerte');
+const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
 
 
 
@@ -65,6 +66,26 @@ app.use(
     crossOriginEmbedderPolicy: false,
   })
 );
+async function verifyRecaptcha(token) {
+  try {
+    const res = await axios.post(
+      'https://www.google.com/recaptcha/api/siteverify',
+      null,
+      {
+        params: {
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: token,
+        },
+      }
+    );
+    const data = res.data;
+    // data.score > 0.5 = probablement humain
+    return data.success && data.score >= 0.5;
+  } catch (err) {
+    console.error('Erreur reCAPTCHA :', err);
+    return false;
+  }
+}
 
 app.use((req, res, next) => {
   const maintenance = process.env.MAINTENANCE_MODE === 'true';
@@ -151,6 +172,15 @@ const perplexityLimiter = rateLimit({
 });
 
 app.use('/api/', generalLimiter);
+
+/* 🚀 Supprimer automatiquement le www */
+app.use((req, res, next) => {
+  if (req.headers.host && req.headers.host.startsWith('www.')) {
+    const newHost = req.headers.host.slice(4);
+    return res.redirect(301, 'https://' + newHost + req.originalUrl);
+  }
+  next();
+});
 
 /* ────────────────────────────────────────────────────────────
    Persistence / Cache
@@ -372,7 +402,6 @@ app.post('/api/perplexity', perplexityLimiter, async (req, res) => {
    Vérifie le captcha hCaptcha avant d'enregistrer le lead
 ──────────────────────────────────────────────────────────── */
 
-
 app.post('/api/lead', leadLimiter, async (req, res) => {
   try {
     const {
@@ -381,11 +410,11 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
       message = '',
       company = '',
       phone = '',
-      'g-recaptcha-response': recaptchaToken // ✅ token renvoyé par Google reCAPTCHA
+      token // ✅ reCAPTCHA v3 envoie un champ `token`, pas `g-recaptcha-response`
     } = req.body || {};
 
-    // 🧠 Étape 1 — Vérification du reCAPTCHA Google
-    if (!recaptchaToken) {
+    // 🧠 Étape 1 — Vérification reCAPTCHA Google v3
+    if (!token) {
       return res.status(400).json({ ok: false, message: 'Captcha manquant.' });
     }
 
@@ -393,17 +422,22 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
       method: 'POST',
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
       body: new URLSearchParams({
-        secret: process.env.RECAPTCHA_SECRET, // ta clé secrète côté serveur
-        response: recaptchaToken
+        secret: process.env.RECAPTCHA_SECRET_KEY, // ✅ nom de variable correct
+        response: token
       })
     });
 
     const captchaData = await verifyCaptcha.json();
-    if (!captchaData.success) {
-      return res.status(403).json({ ok: false, message: 'Vérification du captcha échouée.' });
+
+    if (!captchaData.success || (captchaData.score !== undefined && captchaData.score < 0.5)) {
+      // v3 fournit un score entre 0 et 1
+      return res.status(403).json({
+        ok: false,
+        message: 'Vérification du captcha échouée (activité suspecte détectée).'
+      });
     }
 
-    // 🧩 Étape 2 — Validation & sanitation des champs
+    // 🧩 Étape 2 — Validation & sanitation
     const normalizedEmail = normalizeAndValidateEmail(email);
     if (!normalizedEmail) {
       return res.status(400).json({ ok: false, message: 'Adresse email invalide.' });
@@ -418,7 +452,7 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
     const cleanMessage = sanitizeText(message, 2000);
     const cleanPhone = sanitizeText(phone, 30).trim();
 
-    // ✅ Normalisation téléphone (format international)
+    // ✅ Normalisation téléphone
     let normalizedPhone = cleanPhone;
     if (/^0\d{9}$/.test(cleanPhone)) {
       normalizedPhone = '+33' + cleanPhone.slice(1);
@@ -440,23 +474,23 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
       userAgent: req.get('user-agent')
     };
 
-    // 💾 Enregistrement local
+    // 💾 Sauvegarde locale
     await withFileQueue(LEADS_PATH, async () => {
       const leads = await readJSON(LEADS_PATH);
       leads.push(lead);
       await atomicWriteJSON(LEADS_PATH, leads);
     });
 
-    // 📤 Enregistrement Airtable (si actif)
+    // 📤 Airtable (si activé)
     await saveLeadToAirtable(lead);
     logger.info('📥 Nouveau lead capturé', { email: normalizedEmail, phone: normalizedPhone, name: cleanName });
 
-    // 📧 Envoi e-mail de confirmation
+    // 📧 Envoi e-mail confirmation IONOS
     if (process.env.IONOS_EMAIL && process.env.IONOS_PASS) {
       try {
         const transporter = nodemailer.createTransport({
-          host: 'smtp.ionos.fr',
-          port: 465,
+          host: process.env.SMTP_HOST || 'smtp.ionos.fr',
+          port: process.env.SMTP_PORT || 465,
           secure: true,
           auth: {
             user: process.env.IONOS_EMAIL,
@@ -480,7 +514,7 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
 
         logger.info('📧 Email de confirmation envoyé', { to: normalizedEmail });
       } catch (emailErr) {
-        logger.warn('❗ Erreur lors de l’envoi de l’e-mail de confirmation', { error: emailErr.message });
+        logger.warn('❗ Erreur envoi e-mail', { error: emailErr.message });
       }
     }
 
@@ -494,6 +528,7 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
     res.status(500).json({ ok: false, message: 'Erreur serveur. Veuillez réessayer.' });
   }
 });
+
 
 /* ────────────────────────────────────────────────────────────
    API Agent (OpenAI)
@@ -777,7 +812,7 @@ app.use((err, req, res, next) => {
 ──────────────────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3002;
 const server = app.listen(PORT, () => {
-logger.info(`🌐 Domaine autorisé : ${process.env.FRONTEND_URL || 'https://proactifsystem.com'}`);
+  logger.info(`🌐 Domaine autorisé : ${process.env.FRONTEND_URL || 'https://proactifsystem.com'}`);
   logger.info('Environment', {
     nodeEnv: process.env.NODE_ENV || 'development',
     hasOpenAI: !!process.env.OPENAI_API_KEY,

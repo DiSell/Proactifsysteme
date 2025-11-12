@@ -22,14 +22,12 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#2563eb">
 
-
   <!-- Fonts & styles -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
   <link rel="stylesheet" href="/chatbot.css" />
 </head>
-
 
 <body>
   <header class="hero">
@@ -81,26 +79,18 @@
         <input id="phone" name="phone" type="tel" placeholder="+33 6 12 34 56 78" autocomplete="tel" required />
 
         <small style="display:block; margin-top:-0.5em; margin-bottom:1em; font-size:0.85em; color:#ccc;">
-          Facultatif – utilisé uniquement pour vous recontacter si besoin.
+          
         </small>
 
         <textarea name="message" rows="5" placeholder="Décrivez votre besoin" autocomplete="off"></textarea>
 
-        <!-- ✅ reCAPTCHA Google -->
-        <div class="g-recaptcha" data-sitekey="6LeRaQgsAAAAAAI_XmRBK9SrXqE3CNNmSZIKK3N3"></div>
+        <!-- ✅ reCAPTCHA invisible (v3) -->
+        <input type="hidden" name="token" id="recaptcha-token">
 
         <button class="btn" type="submit">Envoyer</button>
         <p id="lead-status" class="status" aria-live="polite"></p>
       </form>
-
-      <!-- Script Google -->
-
     </section>
-
-    <!-- Script officiel hCaptcha -->
-    <script src="https://www.google.com/recaptcha/api.js" async defer></script>
-
-
   </main>
 
   <footer class="footer">
@@ -117,9 +107,9 @@
       <h3>Politique de confidentialité</h3>
       <p>Les données collectées via ce site (nom, email, téléphone, message) sont utilisées uniquement
         pour répondre à vos demandes et ne sont jamais partagées avec des tiers.</p>
-      <p></p> Vos données personnelles seront conservées pendant une durée d’un an à compter de leur collecte. Au-delà
-      de cette période, elles seront supprimées ou anonymisées conformément à nos engagements en matière de protection
-      des données</p>
+      <p>Vos données personnelles seront conservées pendant une durée d’un an à compter de leur collecte. Au-delà
+        de cette période, elles seront supprimées ou anonymisées conformément à nos engagements en matière de protection
+        des données.</p>
       <p>Vous pouvez demander la suppression de vos données en écrivant à
         <a href="mailto:contact@proactifsysteme.fr">contact@proactifsysteme.fr</a>.
       </p>
@@ -154,17 +144,6 @@
       <div id="agent-toolbar">
         <button id="agent-clear" title="Effacer l’historique">🗑️</button>
         <button id="faq-open" title="Questions fréquentes">📋 FAQ</button>
-
-      </div>
-
-      <!-- ✅ Zone FAQ injectée dans le chat -->
-      <div id="faq-box" style="display: none; padding: 10px; background: #1e1e1e; border-top: 1px solid #333;">
-        <div id="faq-content" style="font-size: 0.95rem; color: #ccc;"></div>
-        <div style="display: flex; justify-content: space-between; margin-top: 10px;">
-          <button id="faq-prev" style="flex: 1; margin-right: 4px;">⏮️</button>
-          <button id="faq-next" style="flex: 1; margin-right: 4px;">⏭️</button>
-          <button id="faq-close" style="flex: 1;">❌</button>
-        </div>
       </div>
 
       <form id="agent-form" autocomplete="off">
@@ -175,133 +154,30 @@
     </div>
   </div>
 
-  <!-- ✅ Script FAQ -->
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const faqData = [
-        {
-          question: "Comment l'IA peut-elle m'aider dans mon entreprise ?",
-          answer: "Elle automatise vos tâches répétitives, qualifie vos leads et répond à vos clients 24h/24."
-        },
-        {
-          question: "L'IA peut-elle générer un devis ou une liste de matériel ?",
-          answer: "Oui, à partir de vos plans ou de vos besoins, elle peut générer un métré ou des estimations automatiquement."
-        },
-        {
-          question: "Est-ce que mes données sont confidentielles ?",
-          answer: "Oui, toutes les données sont stockées de façon sécurisée et ne sont jamais partagées."
-        },
-        {
-          question: "Quels outils l’IA peut-elle remplacer ou accélérer ?",
-          answer: "Elle peut s’intégrer avec vos CRM, logiciels de devis, outils d’analyse ou votre site web."
-        }
-      ];
-
-      let currentFaqIndex = 0;
-
-      const faqBox = document.getElementById('faq-box');
-      const faqContent = document.getElementById('faq-content');
-      const faqOpen = document.getElementById('faq-open');
-      const faqPrev = document.getElementById('faq-prev');
-      const faqNext = document.getElementById('faq-next');
-      const faqClose = document.getElementById('faq-close');
-      const agentLog = document.getElementById('agent-log');
-
-      function renderFaq(index) {
-        const item = faqData[index];
-        if (!item) return;
-        faqContent.innerHTML = `
-          <strong style="color: #4ade80;">❓ ${item.question}</strong>
-          <p style="margin-top: 6px;">${item.answer}</p>
-        `;
-      }
-
-      function showFaq() {
-        currentFaqIndex = 0;
-        renderFaq(currentFaqIndex);
-        faqBox.style.display = 'block';
-        faqBox.scrollIntoView({ behavior: 'smooth' });
-      }
-
-      function hideFaq() {
-        faqBox.style.display = 'none';
-      }
-
-      faqOpen?.addEventListener('click', showFaq);
-      faqNext?.addEventListener('click', () => {
-        currentFaqIndex = (currentFaqIndex + 1) % faqData.length;
-        renderFaq(currentFaqIndex);
-      });
-      faqPrev?.addEventListener('click', () => {
-        currentFaqIndex = (currentFaqIndex - 1 + faqData.length) % faqData.length;
-        renderFaq(currentFaqIndex);
-      });
-      faqClose?.addEventListener('click', hideFaq);
-    });
-  </script>
-
-  <!-- 🧠 Scripts externes -->
+  <!-- ✅ Scripts -->
   <script src="/js/config.js" defer></script>
   <script src="/js/agent.js" defer></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('open-agent');
-      if (!btn) return;
 
-      // Effet ripple (onde au clic)
-      btn.addEventListener('click', (e) => {
-        const ripple = document.createElement('span');
-        ripple.classList.add('ripple');
-        const rect = btn.getBoundingClientRect();
-        const size = Math.max(rect.width, rect.height);
-        const x = e.clientX - rect.left - size / 2;
-        const y = e.clientY - rect.top - size / 2;
-        ripple.style.width = ripple.style.height = `${size}px`;
-        ripple.style.left = `${x}px`;
-        ripple.style.top = `${y}px`;
-        btn.appendChild(ripple);
-
-        setTimeout(() => ripple.remove(), 600);
-      });
-
-      // Animation d’apparition automatique
-      window.addEventListener('load', () => {
-        btn.style.opacity = '0';
-        btn.style.transform = 'translateY(20px) scale(0.9)';
-        setTimeout(() => {
-          btn.style.opacity = '1';
-          btn.style.transform = 'translateY(0) scale(1)';
-        }, 300);
-      });
-    });
-  </script>
+  <!-- ✅ Script Mentions légales -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggleBtn = document.getElementById("legal-toggle");
       const legalPanel = document.getElementById("legal-panel");
       const closeBtn = document.getElementById("legal-close");
 
-      if (!toggleBtn || !legalPanel) {
-        console.warn("Mentions légales : éléments manquants.");
-        return;
-      }
-
-      // Par défaut on masque le panneau
+      if (!toggleBtn || !legalPanel) return;
       legalPanel.style.display = "none";
 
-      // Ouvrir / fermer au clic sur le bouton principal
       toggleBtn.addEventListener("click", () => {
         const isVisible = legalPanel.style.display === "block";
         legalPanel.style.display = isVisible ? "none" : "block";
         legalPanel.scrollIntoView({ behavior: "smooth", block: "center" });
       });
 
-      // Fermer via le bouton "Fermer"
       closeBtn?.addEventListener("click", () => {
         legalPanel.style.display = "none";
       });
 
-      // Fermer si clic en dehors du panneau
       document.addEventListener("click", (e) => {
         if (
           legalPanel.style.display === "block" &&
@@ -314,6 +190,39 @@
     });
   </script>
 
-</body>
+  <!-- ✅ Script reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const form = document.getElementById('lead-form');
+      if (!form) return;
 
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        grecaptcha.ready(async () => {
+          const token = await grecaptcha.execute('6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G', { action: 'submit' });
+
+          const data = Object.fromEntries(new FormData(form).entries());
+          data.token = token;
+
+          const res = await fetch('/api/lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+          });
+
+          const result = await res.json();
+          const status = document.getElementById('lead-status');
+          if (status) {
+            status.textContent = result.message || 'Erreur serveur.';
+            status.style.color = result.ok ? '#00cc66' : '#ff4444';
+          }
+
+          if (result.ok) form.reset();
+        });
+      });
+    });
+  </script>
+</body>
 </html>
