@@ -18,11 +18,9 @@ const sanitizeHtml = require('sanitize-html');
 const nodemailer = require('nodemailer');
 const axios = require('axios');
 const OpenAI = require('openai');
-const { encrypt, decrypt } = require('./encryption'); // ✅ ici
+const { encrypt, decrypt } = require('./encryption');
 const { sendAlertEmail, showMaintenanceAlert } = require('./alerte');
-const RECAPTCHA_SECRET = process.env.RECAPTCHA_SECRET;
-
-
+const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 /* ────────────────────────────────────────────────────────────
    Logger
@@ -72,27 +70,9 @@ app.use(
   })
 );
 
-async function verifyRecaptcha(token) {
-  try {
-    const res = await axios.post(
-      'https://www.google.com/recaptcha/api/siteverify',
-      null,
-      {
-        params: {
-          secret: process.env.RECAPTCHA_SECRET_KEY,
-          response: token,
-        },
-      }
-    );
-    const data = res.data;
-    // data.score > 0.5 = probablement humain
-    return data.success && data.score >= 0.5;
-  } catch (err) {
-    console.error('Erreur reCAPTCHA :', err);
-    return false;
-  }
-}
-
+/* ────────────────────────────────────────────────────────────
+   Maintenance mode
+──────────────────────────────────────────────────────────── */
 app.use((req, res, next) => {
   const maintenance = process.env.MAINTENANCE_MODE === 'true';
   if (maintenance) return showMaintenanceAlert(req, res);
@@ -105,17 +85,16 @@ app.use((req, res, next) => {
 app.use(
   cors({
     origin: [
-      'https://proactifsystem.com',        // ton domaine principal
-      'https://www.proactifsystem.com',    // si jamais des liens externes pointent encore vers le www
-      'https://proactifsysteme.onrender.com' // ton domaine Render
+      'https://proactifsystem.com',
+      'https://www.proactifsystem.com',
+      'https://proactifsysteme.onrender.com'
     ],
     credentials: true,
   })
 );
 
-
 /* ────────────────────────────────────────────────────────────
-   Session cookie auto
+   Sessions
 ──────────────────────────────────────────────────────────── */
 function getSessionId(req, res) {
   let sid = req.cookies?.sessionId;
@@ -140,7 +119,7 @@ app.use((req, res, next) => {
 });
 
 /* ────────────────────────────────────────────────────────────
-   Rate Limiters
+   Rate Limits
 ──────────────────────────────────────────────────────────── */
 function safeIp(req) {
   const ip = req.ip || req.headers['x-forwarded-for'] || 'unknown';
@@ -184,7 +163,9 @@ const perplexityLimiter = rateLimit({
 
 app.use('/api/', generalLimiter);
 
-/* 🚀 Supprimer automatiquement le www */
+/* ────────────────────────────────────────────────────────────
+   Remove www
+──────────────────────────────────────────────────────────── */
 app.use((req, res, next) => {
   if (req.headers.host && req.headers.host.startsWith('www.')) {
     const newHost = req.headers.host.slice(4);
@@ -194,7 +175,7 @@ app.use((req, res, next) => {
 });
 
 /* ────────────────────────────────────────────────────────────
-   Persistence / Cache
+   Cache & DB init
 ──────────────────────────────────────────────────────────── */
 const MAX_CACHE_SIZE = 100;
 const CACHE_TTL = 60_000;
@@ -203,6 +184,7 @@ const cache = new Map();
 const DB_DIR = path.join(__dirname, 'db');
 const CONVOS_PATH = path.join(DB_DIR, 'conversations.json');
 const LEADS_PATH = path.join(DB_DIR, 'leads.json');
+
 if (!fsSync.existsSync(DB_DIR)) fsSync.mkdirSync(DB_DIR, { recursive: true });
 
 const queues = new Map();
@@ -221,7 +203,6 @@ async function ensureFile(filepath, defaultContent = '{}') {
     logger.info('File created', { filepath });
   }
 }
-
 
 function invalidateCache(filepath) {
   cache.delete(filepath);
@@ -244,17 +225,15 @@ async function readJSON(filepath) {
   try {
     const data = await fs.readFile(filepath, 'utf8');
     const decrypted = decrypt(data);
-    const txt = decrypted || data; // fallback si fichier non chiffré
+    const txt = decrypted || data;
     return JSON.parse(txt || (filepath.includes('leads') ? '[]' : '{}'));
   } catch (err) {
     logger.error('Read JSON error', { filepath, error: err.message });
     return filepath.includes('leads') ? [] : {};
   }
 }
-
-
 /* ────────────────────────────────────────────────────────────
-   Init fichiers + normalisation conversations
+   Init fichiers + normalisation des conversations
 ──────────────────────────────────────────────────────────── */
 (async () => {
   await ensureFile(CONVOS_PATH, '{}');
@@ -267,24 +246,18 @@ async function readJSON(filepath) {
     const MAX_NORMALIZE = 10000;
 
     for (const sid of Object.keys(convos)) {
-      if (processed >= MAX_NORMALIZE) {
-        logger.warn('Normalization limit reached', { processed });
-        break;
-      }
+      if (processed >= MAX_NORMALIZE) break;
+
       const arr = convos[sid];
       if (!Array.isArray(arr)) continue;
+
       for (const m of arr) {
-        if (!m.id) {
-          m.id = uuidv4();
-          changed = true;
-        }
-        if (!m.timestamp) {
-          m.timestamp = Date.now();
-          changed = true;
-        }
+        if (!m.id) { m.id = uuidv4(); changed = true; }
+        if (!m.timestamp) { m.timestamp = Date.now(); changed = true; }
         processed++;
       }
     }
+
     if (changed) await atomicWriteJSON(CONVOS_PATH, convos);
   } catch (e) {
     logger.error('Normalization error', { error: e.message });
@@ -294,101 +267,62 @@ async function readJSON(filepath) {
 })();
 
 /* ────────────────────────────────────────────────────────────
-   Validation & helpers
+   Helpers validation
 ──────────────────────────────────────────────────────────── */
 function normalizeAndValidateEmail(email) {
   const e = String(email || '').trim().toLowerCase();
   return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e) ? e : null;
 }
+
 function sanitizeText(text, maxLength = 1000) {
   if (!text) return '';
   const clean = sanitizeHtml(String(text), { allowedTags: [], allowedAttributes: {} });
   return clean.slice(0, maxLength).trim();
 }
+
 function hasSuspiciousPatterns(text) {
-  const re = /(<script|javascript:|onerror=|onclick=|eval\(|on\w+\s*=)/i;
-  return re.test(text);
+  return /(<script|javascript:|onerror=|onclick=|eval\(|on\w+\s*=)/i.test(text);
 }
+
 const FORBIDDEN_PATTERNS = [
   /ignore (previous|all|prior) instructions?/i,
-  /you are now/i,
   /system prompt/i,
-  /disregard/i,
-  /forget (everything|all|previous)/i,
-  /new (role|personality|character)/i,
+  /you are now/i,
   /\[SYSTEM\]/i,
   /\[INST\]/i
 ];
+
 function hasPromptInjection(text) {
-  return FORBIDDEN_PATTERNS.some(p => p.test(text));
+  return FORBIDDEN_PATTERNS.some((p) => p.test(text));
 }
+
 function ymdInTZ(d, tz = 'Europe/Paris') {
-  const f = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit' });
-  return f.format(d);
+  return new Intl.DateTimeFormat('en-CA', {
+    timeZone: tz,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  }).format(d);
 }
 
 /* ────────────────────────────────────────────────────────────
-   Fallback réponses (agent)
+   Fallback réponses (mode réduit)
 ──────────────────────────────────────────────────────────── */
 const FALLBACK_RESPONSES = {
-  greeting: "👋 Bienvenue ! Je suis l'assistant IA de ProactifSystème. Nous créons des solutions d'automatisation et d'IA sur mesure. Comment puis-je vous aider ?",
-  contact: "📧 Pour nous contacter, utilisez le formulaire ci-dessous. Réponse sous 24h.",
-  services: "🤖 Offres: agents IA 24/7, automatisation workflows, analyse de données, apps web sur mesure. Quel domaine vous intéresse ?",
-  pricing: "💰 Tarifs selon vos besoins. Réservez un audit gratuit de 30 min pour un devis personnalisé.",
-  default: "Mode réduit temporaire. Décrivez votre besoin ou laissez un message via le formulaire, on vous répond vite.",
+  greeting: "👋 Bienvenue ! Comment puis-je vous aider aujourd'hui ?",
+  contact: "📧 Pour échanger avec nous, utilisez le formulaire ci-dessous.",
+  services: "🤖 Nous proposons : agents IA 24/7, automatisation, analyse, apps web.",
+  pricing: "💰 Les tarifs varient selon vos besoins. Audit gratuit disponible.",
+  default: "Mode réduit temporaire. Essayez une autre question ou utilisez le formulaire."
 };
 function getFallbackResponse(q) {
-  const s = q.toLowerCase();
-  if (/(bonjour|salut|hello|hi|hey)/.test(s)) return FALLBACK_RESPONSES.greeting;
-  if (/(contact|email|téléphone|joindre)/.test(s)) return FALLBACK_RESPONSES.contact;
-  if (/(prix|tarif|coût|combien|budget)/.test(s)) return FALLBACK_RESPONSES.pricing;
-  if (/(service|offre|proposition|faites|proposez)/.test(s)) return FALLBACK_RESPONSES.services;
+  q = q.toLowerCase();
+  if (/(bonjour|salut|hello|hi)/.test(q)) return FALLBACK_RESPONSES.greeting;
+  if (/(contact|email|joindre)/.test(q)) return FALLBACK_RESPONSES.contact;
+  if (/(prix|tarif|combien)/.test(q)) return FALLBACK_RESPONSES.pricing;
+  if (/(service|proposez)/.test(q)) return FALLBACK_RESPONSES.services;
   return FALLBACK_RESPONSES.default;
 }
-
-/* ────────────────────────────────────────────────────────────
-   Airtable helper (facultatif selon .env)
-──────────────────────────────────────────────────────────── */
-async function saveLeadToAirtable(lead) {
-  const base = process.env.AIRTABLE_BASE_ID;
-  const table = process.env.AIRTABLE_TABLE_NAME;
-  const key = process.env.AIRTABLE_API_KEY;
-  if (!base || !table || !key) return;
-
-  const url = `https://api.airtable.com/v0/${base}/${table}`;
-
-  try {
-    await axios.post(
-      url,
-      {
-        fields: {
-          Nom: lead.name,
-          Entreprise: lead.company || '',
-          Email: lead.email,
-          Téléphone: lead.phone || '',
-          Message: lead.message,
-          Timestamp: lead.timestamp,
-          IP: lead.ip,
-          Agent: lead.userAgent
-        }
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${key}`,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-    logger.info('✅ Lead stocké dans Airtable', { email: lead.email, phone: lead.phone });
-  } catch (err) {
-    logger.warn('⚠️ Erreur Airtable', {
-      error: err.response?.data?.error?.message || err.message
-    });
-  }
-}
-
-
 
 /* ────────────────────────────────────────────────────────────
    API Perplexity
@@ -396,7 +330,7 @@ async function saveLeadToAirtable(lead) {
 const { askPerplexity } = require('./perplexity');
 
 app.post('/api/perplexity', perplexityLimiter, async (req, res) => {
-  const { q } = req.body;
+  const { q } = req.body || {};
   if (!q) return res.status(400).json({ error: 'Question manquante' });
 
   try {
@@ -409,246 +343,119 @@ app.post('/api/perplexity', perplexityLimiter, async (req, res) => {
 });
 
 /* ────────────────────────────────────────────────────────────
-   Route : /api/lead
-   Vérifie le captcha hCaptcha avant d'enregistrer le lead
+   API Lead (captcha + stockage)
 ──────────────────────────────────────────────────────────── */
-
 app.post('/api/lead', leadLimiter, async (req, res) => {
   try {
-    const {
-      name = '',
-      email = '',
-      message = '',
-      company = '',
-      phone = '',
-      token // ✅ reCAPTCHA v3 envoie un champ `token`, pas `g-recaptcha-response`
-    } = req.body || {};
+    const { name = '', email = '', message = '', company = '', phone = '', token } = req.body || {};
 
-    // 🧠 Étape 1 — Vérification reCAPTCHA Google v3
-    if (!token) {
-      return res.status(400).json({ ok: false, message: 'Captcha manquant.' });
+    if (!token) return res.status(400).json({ ok: false, message: 'Captcha manquant.' });
+
+    // Vérification reCAPTCHA
+    const verify = await fetch(
+      'https://www.google.com/recaptcha/api/siteverify',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          secret: process.env.RECAPTCHA_SECRET_KEY,
+          response: token
+        })
+      }
+    );
+    const cap = await verify.json();
+    if (!cap.success || (cap.score !== undefined && cap.score < 0.5)) {
+      return res.status(403).json({ ok: false, message: 'Captcha invalide ou activité suspecte.' });
     }
 
-    const verifyCaptcha = await fetch('https://www.google.com/recaptcha/api/siteverify', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-      body: new URLSearchParams({
-        secret: process.env.RECAPTCHA_SECRET_KEY, // ✅ nom de variable correct
-        response: token
-      })
-    });
-
-    const captchaData = await verifyCaptcha.json();
-
-    if (!captchaData.success || (captchaData.score !== undefined && captchaData.score < 0.5)) {
-      // v3 fournit un score entre 0 et 1
-      return res.status(403).json({
-        ok: false,
-        message: 'Vérification du captcha échouée (activité suspecte détectée).'
-      });
-    }
-
-    // 🧩 Étape 2 — Validation & sanitation
+    // Validation
     const normalizedEmail = normalizeAndValidateEmail(email);
-    if (!normalizedEmail) {
-      return res.status(400).json({ ok: false, message: 'Adresse email invalide.' });
-    }
+    if (!normalizedEmail) return res.status(400).json({ ok: false, message: 'Email invalide.' });
 
     const cleanName = sanitizeText(name, 100);
-    if (!cleanName) {
-      return res.status(400).json({ ok: false, message: 'Le nom est requis.' });
-    }
-
-    const cleanCompany = sanitizeText(company, 150);
-    const cleanMessage = sanitizeText(message, 2000);
-    const cleanPhone = sanitizeText(phone, 30).trim();
-
-    // ✅ Normalisation téléphone
-    let normalizedPhone = cleanPhone;
-    if (/^0\d{9}$/.test(cleanPhone)) {
-      normalizedPhone = '+33' + cleanPhone.slice(1);
-    } else if (!cleanPhone.startsWith('+') && /\d{8,}/.test(cleanPhone)) {
-      normalizedPhone = '+' + cleanPhone.replace(/\D/g, '');
-    }
-    if (normalizedPhone && !/^\+\d{8,20}$/.test(normalizedPhone)) {
-      return res.status(400).json({ ok: false, message: 'Numéro de téléphone invalide.' });
-    }
+    if (!cleanName) return res.status(400).json({ ok: false, message: 'Nom requis.' });
 
     const lead = {
       name: cleanName,
-      company: cleanCompany,
+      company: sanitizeText(company, 150),
       email: normalizedEmail,
-      phone: normalizedPhone,
-      message: cleanMessage,
+      phone: sanitizeText(phone || '', 20),
+      message: sanitizeText(message, 2000),
       timestamp: new Date().toISOString(),
       ip: req.ip,
       userAgent: req.get('user-agent')
     };
 
-    // 💾 Sauvegarde locale
+    // Sauvegarde
     await withFileQueue(LEADS_PATH, async () => {
       const leads = await readJSON(LEADS_PATH);
       leads.push(lead);
       await atomicWriteJSON(LEADS_PATH, leads);
     });
 
-    // 📤 Airtable (si activé)
-    await saveLeadToAirtable(lead);
-    logger.info('📥 Nouveau lead capturé', { email: normalizedEmail, phone: normalizedPhone, name: cleanName });
-
-    // 📧 Envoi e-mail confirmation IONOS
-    if (process.env.IONOS_EMAIL && process.env.IONOS_PASS) {
-      try {
-        const transporter = nodemailer.createTransport({
-          host: process.env.SMTP_HOST || 'smtp.ionos.fr',
-          port: process.env.SMTP_PORT || 465,
-          secure: true,
-          auth: {
-            user: process.env.IONOS_EMAIL,
-            pass: process.env.IONOS_PASS
-          }
-        });
-
-        await transporter.sendMail({
-          from: `"ProactifSystème" <${process.env.FROM_EMAIL}>`,
-          to: normalizedEmail,
-          subject: '✅ Confirmation de votre message',
-          html: `
-            <p>Bonjour ${cleanName},</p>
-            <p>Nous avons bien reçu votre message${cleanCompany ? ` concernant <strong>${cleanCompany}</strong>` : ''}.</p>
-            <blockquote>${cleanMessage}</blockquote>
-            ${normalizedPhone ? `<p>📞 Nous avons noté votre numéro : <strong>${normalizedPhone}</strong></p>` : ''}
-            <p>Nous vous répondrons sous 24h.</p>
-            <p>— L’équipe <strong>ProactifSystème</strong></p>
-          `
-        });
-
-        logger.info('📧 Email de confirmation envoyé', { to: normalizedEmail });
-      } catch (emailErr) {
-        logger.warn('❗ Erreur envoi e-mail', { error: emailErr.message });
-      }
-    }
-
-    res.json({
-      ok: true,
-      message: '✅ Votre message a bien été reçu. Une confirmation vous a été envoyée par e-mail.'
-    });
-
+    res.json({ ok: true, message: 'Votre message a bien été reçu.' });
   } catch (err) {
-    logger.error('❌ Erreur serveur lors de la soumission du lead', { error: err.message });
-    res.status(500).json({ ok: false, message: 'Erreur serveur. Veuillez réessayer.' });
+    logger.error('Erreur lead', { error: err.message });
+    res.status(500).json({ ok: false, message: 'Erreur serveur.' });
   }
 });
 
-
 /* ────────────────────────────────────────────────────────────
-   API Agent (OpenAI)
+   API Agent OpenAI
 ──────────────────────────────────────────────────────────── */
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 15_000 });
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 15000 });
 
 const SYSTEM_PROMPT = `
-Tu es l’assistant IA de ProactifSystème. Ton rôle : qualifier les visiteurs pour proposer la meilleure solution en automatisation et IA métier.
-
-## PHASE 1 — ACCUEIL
-- Accueillir l’utilisateur (👋 si pertinent)
-- Reformuler son besoin en 1 phrase
-- Montrer que tu as compris l’objectif business
-
-## PHASE 2 — QUALIFICATION (2-3 questions max)
-- Secteur d’activité ?
-- Objectif principal ? (gagner du temps, automatiser, générer des leads…)
-- Volume hebdo de demandes/clients ?
-- Outils en place ? (CRM, Zapier, Notion…)
-- Clé-en-main ou accompagnement ?
-- Niveau d’urgence ?
-
-## PHASE 3 — ACTION
-- Recommande UNE solution adaptée + CTA (démo, audit gratuit, checklist email)
-
-Style: langue de l’utilisateur, ton pro/chaleureux, 3–5 phrases, max 1 émoji si pertinent.
-Chaque message doit avancer vers un objectif (qualification ou CTA).
+Tu es l’assistant IA de ProactifSystème.  
+Ton rôle : qualifier le visiteur et l’orienter vers la meilleure solution pro.
 `.trim();
 
 app.post('/api/agent', agentLimiter, async (req, res) => {
-  const rawQuestion = (req.body?.q || '').trim();
-  if (!rawQuestion) return res.status(400).json({ a: 'Posez-moi une question pour commencer ! 😊' });
-  if (rawQuestion.length < 3) return res.status(400).json({ a: 'Votre question est trop courte. Pouvez-vous préciser votre besoin ?' });
+  const raw = (req.body?.q || '').trim();
+  if (!raw) return res.status(400).json({ a: 'Posez-moi une question ! 😊' });
 
-  const question = sanitizeText(rawQuestion, 500);
+  if (raw.length < 3) return res.status(400).json({ a: 'Votre question est trop courte.' });
 
-  if (hasPromptInjection(rawQuestion)) {
-    logger.warn('Prompt injection attempt', { sessionId: getSessionId(req, res), ip: req.ip });
-    return res.status(400).json({ a: 'Question non autorisée. Veuillez reformuler votre demande.' });
-  }
+  if (hasSuspiciousPatterns(raw) || hasPromptInjection(raw))
+    return res.status(400).json({ a: 'Requête non autorisée.' });
 
-  if (hasSuspiciousPatterns(rawQuestion)) {
-    logger.warn('Suspicious input', { sessionId: getSessionId(req, res), ip: req.ip });
-    return res.status(400).json({ a: 'Question invalide détectée.' });
-  }
-
-  if (!process.env.OPENAI_API_KEY) {
-    logger.warn('OpenAI API key missing, using fallback');
-    return res.json({ a: getFallbackResponse(question) });
-  }
-
+  const question = sanitizeText(raw, 500);
   const sessionId = getSessionId(req, res);
 
   try {
-    let answer = 'Pouvez-vous reformuler votre question ?';
+    let answer = 'Pouvez-vous reformuler ?';
 
     await withFileQueue(CONVOS_PATH, async () => {
       const convos = await readJSON(CONVOS_PATH);
       if (!convos[sessionId]) convos[sessionId] = [];
 
-      if (convos[sessionId].length > 100) {
-        convos[sessionId] = convos[sessionId].slice(-50);
-        logger.warn('Session memory trimmed', { sessionId });
-      }
-
       convos[sessionId].push({ id: uuidv4(), role: 'user', content: question, timestamp: Date.now() });
 
-      const recentMessages = convos[sessionId].slice(-20).map((m) => ({ role: m.role, content: m.content }));
-      const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...recentMessages];
-
-      const HARD_TIMEOUT_MS = 15_000;
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), HARD_TIMEOUT_MS);
+      const recent = convos[sessionId].slice(-20).map(m => ({ role: m.role, content: m.content }));
+      const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...recent];
 
       try {
         const result = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages,
           max_tokens: 350,
-          temperature: 0.8,
-          presence_penalty: 0.6,
-          frequency_penalty: 0.3,
-        }, { signal: controller.signal });
+          temperature: 0.8
+        });
 
-        clearTimeout(timeoutId);
-
-        if (result && result.choices?.[0]?.message?.content) {
-          answer = String(result.choices[0].message.content).trim() || answer;
+        if (result?.choices?.[0]?.message?.content) {
+          answer = String(result.choices[0].message.content).trim();
         }
       } catch (err) {
-        clearTimeout(timeoutId);
-        if (err.name === 'AbortError') {
-          throw new Error('APP_TIMEOUT');
-        }
-        throw err;
+        logger.error('OpenAI error', { error: err.message });
       }
 
       convos[sessionId].push({ id: uuidv4(), role: 'assistant', content: answer, timestamp: Date.now() });
       await atomicWriteJSON(CONVOS_PATH, convos);
-      logger.info('AGENT_SAVE', { sid: sessionId, saved: true });
     });
 
-    logger.info('Agent response', { sessionId, questionLength: question.length, answerLength: answer.length });
     res.json({ a: answer });
   } catch (err) {
-    logger.error('OpenAI error', { error: err.message, code: err.code, status: err.status, sessionId });
-    if (err.message === 'APP_TIMEOUT') return res.status(504).json({ a: '⏱️ La requête a pris trop de temps. Réessayez avec une question plus courte.' });
-    if (err.status === 429) return res.status(429).json({ a: '🚦 Trop de requêtes en cours. Attendez 1 minute.' });
-    if (err.code === 'insufficient_quota') return res.status(503).json({ a: '🔧 Service temporairement indisponible. Contactez-nous via le formulaire.' });
+    logger.error('Agent global error', { error: err.message });
     return res.json({ a: getFallbackResponse(question) });
   }
 });
@@ -656,217 +463,54 @@ app.post('/api/agent', agentLimiter, async (req, res) => {
 /* ────────────────────────────────────────────────────────────
    Health / Whoami / History / Stats / Config
 ──────────────────────────────────────────────────────────── */
-const healthHandler = (req, res) => {
+function health(req, res) {
   res.json({
     status: 'ok',
-    uptime: Math.floor(process.uptime()),
+    uptime: process.uptime(),
     timestamp: new Date().toISOString(),
     version: '1.2.0',
-    hasOpenAI: process.env.NODE_ENV === 'production' ? undefined : !!process.env.OPENAI_API_KEY,
-    sid: req.cookies?.sessionId || null,
+    sid: req.cookies?.sessionId || null
   });
-};
-const whoamiHandler = (req, res) => {
-  res.json({
-    file: __filename,
-    cwd: process.cwd(),
-    ip: req.ip,
-    cookies: req.cookies,
-    hasSessionCookie: !!req.cookies?.sessionId,
-    uptimeSec: Math.floor(process.uptime()),
-  });
-};
+}
 
-app.get('/health', healthHandler);
-app.get('/api/health', healthHandler);
-app.get('/whoami', whoamiHandler);
-app.get('/api/whoami', whoamiHandler);
+app.get('/health', health);
+app.get('/api/health', health);
 
 app.get('/api/history', async (req, res) => {
   try {
     const sid = getSessionId(req, res);
-    const convos = await readJSONCached(CONVOS_PATH);
-    const all = Array.isArray(convos[sid]) ? convos[sid] : [];
-    const messages = all.slice(-20).map((m) => ({ role: m.role, content: m.content, timestamp: m.timestamp }));
-    logger.info('HISTORY', { sid, count: messages.length });
-    res.json({ ok: true, sid, count: messages.length, messages });
+    const convos = await readJSON(CONVOS_PATH);
+    const arr = Array.isArray(convos[sid]) ? convos[sid] : [];
+    res.json({ ok: true, count: arr.length, messages: arr.slice(-20) });
   } catch (err) {
-    logger.error('History route error', { error: err.message });
     res.status(500).json({ ok: false, messages: [] });
   }
 });
 
-app.get('/api/stats', async (req, res) => {
-  try {
-    const [convos, leads] = await Promise.all([readJSONCached(CONVOS_PATH), readJSONCached(LEADS_PATH)]);
-    const totalMessages = Object.values(convos).reduce((sum, msgs) => sum + (Array.isArray(msgs) ? msgs.length : 0), 0);
-
-    const activeSessions = Object.keys(convos).filter((sid) => {
-      const msgs = convos[sid];
-      if (!Array.isArray(msgs) || msgs.length === 0) return false;
-      const lastTimestamp = msgs[msgs.length - 1].timestamp;
-      const hourAgo = Date.now() - 60 * 60 * 1000;
-      return lastTimestamp > hourAgo;
-    }).length;
-
-    const todayYMD = ymdInTZ(new Date(), 'Europe/Paris');
-    const leadsToday = leads.filter((l) => ymdInTZ(new Date(l.timestamp), 'Europe/Paris') === todayYMD).length;
-
-    const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-    const activeSessionsWeek = Object.keys(convos).filter((sid) => {
-      const msgs = convos[sid];
-      if (!Array.isArray(msgs) || msgs.length === 0) return false;
-      const lastTimestamp = msgs[msgs.length - 1].timestamp;
-      return lastTimestamp > weekAgo;
-    }).length;
-
-    const conversionRate = activeSessionsWeek > 0 ? ((leads.length / activeSessionsWeek) * 100).toFixed(2) : 0;
-
-    res.json({
-      sessions: { total: Object.keys(convos).length, active: activeSessions, activeWeek: activeSessionsWeek },
-      messages: { total: totalMessages, average: (totalMessages / Math.max(Object.keys(convos).length, 1)).toFixed(2) },
-      leads: { total: leads.length, today: leadsToday },
-      metrics: {
-        conversionRate: `${conversionRate}%`,
-        messagesPerActiveSession: activeSessions > 0 ? (totalMessages / activeSessions).toFixed(2) : 0,
-      },
-      uptime: Math.floor(process.uptime()),
-    });
-  } catch (err) {
-    logger.error('Stats error', { error: err.message });
-    res.status(500).json({ error: 'Stats temporarily unavailable' });
-  }
-});
-
-app.get('/api/config', (req, res) => {
-  res.json({
-    project: 'ProactifSystème',
-    version: '1.2.0',
-    API_BASE: '',
-    model: 'gpt-4o-mini',
-    hasOpenAI: process.env.NODE_ENV === 'production' ? undefined : !!process.env.OPENAI_API_KEY,
-    lang: 'fr',
-    maxTokens: 350,
-  });
-});
-
 /* ────────────────────────────────────────────────────────────
-   Nettoyage quotidien (sessions > 7 jours)
-──────────────────────────────────────────────────────────── */
-setInterval(async () => {
-  try {
-    await withFileQueue(CONVOS_PATH, async () => {
-      const convos = await readJSON(CONVOS_PATH);
-      const now = Date.now();
-      const maxAge = 7 * 24 * 60 * 60 * 1000;
-      let cleaned = 0;
-
-      for (const sid of Object.keys(convos)) {
-        const msgs = convos[sid];
-        if (!Array.isArray(msgs) || msgs.length === 0) {
-          delete convos[sid];
-          cleaned++;
-          continue;
-        }
-        const lastTimestamp = msgs[msgs.length - 1].timestamp;
-        if (!lastTimestamp || now - lastTimestamp > maxAge) {
-          delete convos[sid];
-          cleaned++;
-        }
-      }
-
-      if (cleaned > 0) {
-        await atomicWriteJSON(CONVOS_PATH, convos);
-        logger.info('Cleanup completed', { sessionsRemoved: cleaned });
-      }
-    });
-  } catch (err) {
-    logger.error('Cleanup error', { error: err.message });
-  }
-}, 24 * 60 * 60 * 1000);
-
-/* ────────────────────────────────────────────────────────────
-   Affichage des routes
-──────────────────────────────────────────────────────────── */
-function logAllRoutes(app) {
-  const routes = [];
-  if (!app._router || !app._router.stack) return routes;
-
-  app._router.stack.forEach((middleware) => {
-    if (middleware.route) {
-      const methods = Object.keys(middleware.route.methods).map((m) => m.toUpperCase()).join(',');
-      routes.push(`${methods.padEnd(8)} ${middleware.route.path}`);
-    } else if (middleware.name === 'router' && middleware.handle?.stack) {
-      middleware.handle.stack.forEach((handler) => {
-        if (handler.route) {
-          const methods = Object.keys(handler.route.methods).map((m) => m.toUpperCase()).join(',');
-          routes.push(`${methods.padEnd(8)} ${handler.route.path}`);
-        }
-      });
-    }
-  });
-
-  return routes;
-}
-
-/* ────────────────────────────────────────────────────────────
-   404 & erreurs
-──────────────────────────────────────────────────────────── */
-app.use((req, res) => res.status(404).json({ error: 'Route not found' }));
-app.use((err, req, res, next) => {
-  logger.error('Unhandled error', { error: err.message, stack: err.stack, path: req.path });
-  res.status(500).json({ error: 'Internal server error' });
-});
-
-/* ────────────────────────────────────────────────────────────
-   Listen (placé TOUT EN BAS)
+   Listen
 ──────────────────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3002;
-
 const server = app.listen(PORT, () => {
-  const FRONTEND_DOMAINS = [
-    process.env.FRONTEND_URL || 'https://proactifsystem.com',
-    'https://www.proactifsystem.com',
-    'https://proactifsysteme.onrender.com'
-  ]; logger.info('Environment', {
+  logger.info('Environment', {
     nodeEnv: process.env.NODE_ENV || 'development',
     hasOpenAI: !!process.env.OPENAI_API_KEY,
-    version: '1.2.0',
+    version: '1.2.0'
   });
 
-  const routes = logAllRoutes(app);
-  if (routes.length > 0) {
-    console.log(`\n📍 Routes montées (${routes.length}):`);
-    routes.forEach(route => console.log(`   ${route}`));
-    console.log('');
-  } else {
-    logger.warn('Aucune route détectée');
-  }
-});
-
-// ✅ rien après ce bloc
-
-
-
-const routes = logAllRoutes(app);
-if (routes.length > 0) {
-  console.log(`\n📍 Routes montées (${routes.length}):`);
-  routes.forEach(route => console.log(`   ${route}`));
-  console.log('');
-} else {
-  logger.warn('Aucune route détectée');
-}
+  logger.info(`🚀 Server running on port ${PORT}`);
 });
 
 /* ────────────────────────────────────────────────────────────
    Shutdown
 ──────────────────────────────────────────────────────────── */
 function shutdown(signal) {
-  logger.info(`${signal} received, shutting down gracefully`);
+  logger.info(`${signal} received, shutting down gracefully...`);
   server.close(() => {
-    logger.info('Server closed');
+    logger.info('Server closed.');
     process.exit(0);
   });
 }
+
 process.on('SIGTERM', () => shutdown('SIGTERM'));
 process.on('SIGINT', () => shutdown('SIGINT'));
