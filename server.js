@@ -822,21 +822,30 @@ app.use((err, req, res, next) => {
    Listen (placé TOUT EN BAS)
 ──────────────────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3002;
-const FRONTEND_DOMAINS = [
-  process.env.FRONTEND_URL || 'https://proactifsystem.com',
-  'https://www.proactifsystem.com',
-  'https://proactifsysteme.onrender.com'
-];
 
 const server = app.listen(PORT, () => {
-  logger.info('🌐 Domaines autorisés :', FRONTEND_DOMAINS);
-  logger.info('⚙️ Environment', {
+  const FRONTEND_DOMAINS = [
+    process.env.FRONTEND_URL || 'https://proactifsystem.com',
+    'https://www.proactifsystem.com',
+    'https://proactifsysteme.onrender.com'
+  ]; logger.info('Environment', {
     nodeEnv: process.env.NODE_ENV || 'development',
     hasOpenAI: !!process.env.OPENAI_API_KEY,
     version: '1.2.0',
   });
-  logger.info(`🚀 Serveur en ligne sur le port ${PORT}`);
+
+  const routes = logAllRoutes(app);
+  if (routes.length > 0) {
+    console.log(`\n📍 Routes montées (${routes.length}):`);
+    routes.forEach(route => console.log(`   ${route}`));
+    console.log('');
+  } else {
+    logger.warn('Aucune route détectée');
+  }
 });
+
+// ✅ rien après ce bloc
+
 
 
 const routes = logAllRoutes(app);
