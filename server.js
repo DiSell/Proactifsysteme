@@ -58,7 +58,12 @@ app.use(
         styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
         fontSrc: ["'self'", "https://fonts.gstatic.com"],
         imgSrc: ["'self'", 'data:', 'https:'],
-        connectSrc: ["'self'", process.env.FRONTEND_URL || 'https://proactifsystem.com'],
+        connectSrc: [
+          "'self'",
+          'https://proactifsystem.com',
+          'https://www.proactifsystem.com',
+          'https://proactifsysteme.onrender.com'
+        ],
         baseUri: ["'self'"],
         objectSrc: ["'none'"],
       },
@@ -66,6 +71,7 @@ app.use(
     crossOriginEmbedderPolicy: false,
   })
 );
+
 async function verifyRecaptcha(token) {
   try {
     const res = await axios.post(
@@ -98,10 +104,15 @@ app.use((req, res, next) => {
 ──────────────────────────────────────────────────────────── */
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'https://proactifsystem.com',
+    origin: [
+      'https://proactifsystem.com',        // ton domaine principal
+      'https://www.proactifsystem.com',    // si jamais des liens externes pointent encore vers le www
+      'https://proactifsysteme.onrender.com' // ton domaine Render
+    ],
     credentials: true,
   })
 );
+
 
 /* ────────────────────────────────────────────────────────────
    Session cookie auto
@@ -811,22 +822,31 @@ app.use((err, req, res, next) => {
    Listen (placé TOUT EN BAS)
 ──────────────────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3002;
+const FRONTEND_DOMAINS = [
+  process.env.FRONTEND_URL || 'https://proactifsystem.com',
+  'https://www.proactifsystem.com',
+  'https://proactifsysteme.onrender.com'
+];
+
 const server = app.listen(PORT, () => {
-  logger.info(`🌐 Domaine autorisé : ${process.env.FRONTEND_URL || 'https://proactifsystem.com'}`);
-  logger.info('Environment', {
+  logger.info('🌐 Domaines autorisés :', FRONTEND_DOMAINS);
+  logger.info('⚙️ Environment', {
     nodeEnv: process.env.NODE_ENV || 'development',
     hasOpenAI: !!process.env.OPENAI_API_KEY,
     version: '1.2.0',
   });
+  logger.info(`🚀 Serveur en ligne sur le port ${PORT}`);
+});
 
-  const routes = logAllRoutes(app);
-  if (routes.length > 0) {
-    console.log(`\n📍 Routes montées (${routes.length}):`);
-    routes.forEach(route => console.log(`   ${route}`));
-    console.log('');
-  } else {
-    logger.warn('Aucune route détectée');
-  }
+
+const routes = logAllRoutes(app);
+if (routes.length > 0) {
+  console.log(`\n📍 Routes montées (${routes.length}):`);
+  routes.forEach(route => console.log(`   ${route}`));
+  console.log('');
+} else {
+  logger.warn('Aucune route détectée');
+}
 });
 
 /* ────────────────────────────────────────────────────────────

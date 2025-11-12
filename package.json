@@ -1,15 +1,16 @@
 {
-  "name": "proactifsysteme",
-  "version": "1.0.0",
-  "description": "Backend principal de ProactifSystème (chatbot, leads, IA, recaptcha, etc.)",
+  "name": "proactifsystem",
+  "version": "1.0.1",
+  "description": "Backend principal de ProactifSystème (chatbot, leads, IA, reCAPTCHA, etc.)",
   "main": "server.js",
   "type": "commonjs",
   "scripts": {
     "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "nodemon server.js",
+    "postinstall": "echo '✅ Dépendances installées avec succès pour ProactifSystème'"
   },
   "dependencies": {
-    "axios": "^1.13.2",
+    "axios": "^1.6.8",
     "compression": "^1.8.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -24,6 +25,9 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.0"
+  },
+  "engines": {
+    "node": ">=18.x"
   },
   "author": "Didier Sellin",
   "license": "MIT"
