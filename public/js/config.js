@@ -1,2 +1,2 @@
 // config.js
-window.API_BASE_URL = window.location.origin + "/api";
+window.API_BASE_URL = "https://proactifsystem-server.onrender.com";

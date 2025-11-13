@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE = window.location.origin + "/api";
+  const API_BASE = "https://proactifsysteme.onrender.com/api";
 
   const $ = (sel) => document.querySelector(sel);
   const log = (...args) => console.debug('[agent]', ...args);
