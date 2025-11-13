@@ -1,11 +1,6 @@
 (() => {
-  const API_BASE = (
-    window.APP_CONFIG?.API_BASE ||
-    window.API_BASE_URL ||
-    (window.location.hostname.includes('onrender.com')
-      ? 'https://proactifsysteme.onrender.com/api'
-      : 'https://proactifsystem.com/api')
-  );
+  const API_BASE = window.location.origin + "/api";
+
   const $ = (sel) => document.querySelector(sel);
   const log = (...args) => console.debug('[agent]', ...args);
   const agent = $('#agent-widget');

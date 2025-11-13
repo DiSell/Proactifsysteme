@@ -40,6 +40,7 @@ app.use(compression());
 app.use(express.json({ limit: '10kb' }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 /* ────────────────────────────────────────────────────────────
    Helmet (CSP)
@@ -82,28 +83,32 @@ app.use((req, res, next) => {
 /* ────────────────────────────────────────────────────────────
    CORS
 ──────────────────────────────────────────────────────────── */
-app.use(
-  cors({
-    origin: [
-      'https://proactifsystem.com',
-      'https://www.proactifsystem.com',
-      'https://proactifsysteme.onrender.com'
-    ],
-    credentials: true,
-  })
-);
+app.use(cors({
+  origin: (origin, cb) => {
+    const allowed = [
+      "https://www.proactifsystem.com",
+      "https://proactifsystem.com",
+      "https://proactifsysteme.onrender.com"
+    ];
+    if (!origin || allowed.includes(origin)) cb(null, true);
+    else cb(new Error("CORS BLOCKED: " + origin));
+  },
+  credentials: true
+}));
+
 
 /* ────────────────────────────────────────────────────────────
    Sessions
 ──────────────────────────────────────────────────────────── */
 function getSessionId(req, res) {
   let sid = req.cookies?.sessionId;
+
   if (!sid) {
     sid = uuidv4();
     res.cookie('sessionId', sid, {
       httpOnly: true,
-      sameSite: process.env.COOKIE_SAMESITE || 'lax',
-      secure: process.env.NODE_ENV === 'production',
+      secure: true,          // obligatoire pour iPhone
+      sameSite: 'none',      // obligatoire pour iPhone
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     logger.info('New session created', { sessionId: sid });
