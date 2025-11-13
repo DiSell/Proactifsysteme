@@ -191,36 +191,6 @@ const perplexityLimiter = rateLimit({
 app.use('/api/', generalLimiter);
 
 /* ────────────────────────────────────────────────────────────
-   Remove www
-──────────────────────────────────────────────────────────── */
-app.use((req, res, next) => {
-  if (req.headers.host && req.headers.host.startsWith('www.')) {
-    const newHost = req.headers.host.slice(4);/* ────────────────────────────────────────────────────────────
-   Remove www (mais jamais pour les routes /api)
-──────────────────────────────────────────────────────────── */
-    app.use((req, res, next) => {
-      const host = req.headers.host || "";
-
-      // ❌ Surtout NE PAS rediriger les appels API !
-      if (req.path.startsWith("/api/")) {
-        return next();
-      }
-
-      // ✔ Redirection OK seulement pour les pages HTML
-      if (host.startsWith("www.")) {
-        const newHost = host.replace("www.", "");
-        return res.redirect(301, "https://" + newHost + req.originalUrl);
-      }
-
-      next();
-    });
-
-    return res.redirect(301, 'https://' + newHost + req.originalUrl);
-  }
-  next();
-});
-
-/* ────────────────────────────────────────────────────────────
    Cache & DB init
 ──────────────────────────────────────────────────────────── */
 const MAX_CACHE_SIZE = 100;
