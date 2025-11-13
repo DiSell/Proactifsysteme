@@ -10,11 +10,11 @@
 }
 
 /* ═══════════════════════════════════════════════════════
-   BUBBLE (bulle d'accueil)
+   BULLE D’ACCUEIL
    ═══════════════════════════════════════════════════════ */
 #agent-widget .bubble {
     background: #2563eb;
-    color: white;
+    color: #fff;
     padding: 10px 16px;
     border-radius: 20px;
     max-width: 280px;
@@ -23,7 +23,8 @@
     position: absolute;
     bottom: 0;
     right: 70px;
-    z-index: 500;
+    z-index: 10050;
+    /* au-dessus du panel */
     display: none;
     animation: bubble-slide-in 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards,
         bubble-float 2.4s ease-in-out 0.5s infinite;
@@ -34,7 +35,7 @@
     display: block;
 }
 
-/* Petite flèche pointant vers le bouton */
+/* Flèche de la bulle */
 #agent-widget .bubble::after {
     content: '';
     position: absolute;
@@ -48,9 +49,7 @@
     border-bottom: 6px solid transparent;
 }
 
-/* ═══════════════════════════════════════════════════════
-   ANIMATIONS DE LA BULLE
-   ═══════════════════════════════════════════════════════ */
+/* Animations */
 @keyframes bubble-slide-in {
     0% {
         opacity: 0;
@@ -80,7 +79,6 @@
     }
 }
 
-/* Pulsation (optionnelle) */
 @keyframes bubble-pulse {
 
     0%,
@@ -93,12 +91,6 @@
     }
 }
 
-#agent-widget .bubble.pulse {
-    animation: bubble-slide-in 0.4s ease-out forwards,
-        bubble-pulse 2s ease-in-out 0.5s infinite;
-}
-
-/* Glissement horizontal (optionnel) */
 @keyframes bubble-sway {
 
     0%,
@@ -111,92 +103,28 @@
     }
 }
 
+/* Variantes (si tu veux les activer via des classes) */
+#agent-widget .bubble.pulse {
+    animation: bubble-slide-in 0.4s ease-out forwards,
+        bubble-pulse 2s ease-in-out 0.5s infinite;
+}
+
 #agent-widget .bubble.sway {
     animation: bubble-slide-in 0.4s ease-out forwards,
         bubble-sway 3s ease-in-out 0.4s infinite;
 }
 
 /* ═══════════════════════════════════════════════════════
-   VARIANTES DE POSITION
-   ═══════════════════════════════════════════════════════ */
-
-/* 1️⃣ Bulle à gauche du bouton (alignée verticalement) */
-#agent-widget .bubble.left {
-    bottom: 0;
-    right: 70px;
-}
-
-/* 2️⃣ Bulle centrée verticalement */
-#agent-widget .bubble.centered {
-    bottom: 50%;
-    transform: translateY(50%);
-    right: 70px;
-}
-
-#agent-widget .bubble.centered::after {
-    top: 50%;
-    transform: translateY(-50%);
-}
-
-/* 3️⃣ Bulle légèrement au-dessus du bouton */
-#agent-widget .bubble.above {
-    bottom: 10px;
-    right: 70px;
-}
-
-/* 4️⃣ Bulle compacte (collée au bouton) */
-#agent-widget .bubble.compact {
-    bottom: 12px;
-    right: 62px;
-    padding: 8px 12px;
-    font-size: 0.85rem;
-    border-radius: 16px;
-}
-
-#agent-widget .bubble.compact::after {
-    right: -6px;
-    border-left-width: 6px;
-    border-top-width: 5px;
-    border-bottom-width: 5px;
-}
-
-/* ═══════════════════════════════════════════════════════
-   VARIANTES DE STYLE
-   ═══════════════════════════════════════════════════════ */
-
-/* Flèche arrondie (plus moderne) */
-#agent-widget .bubble.rounded-arrow::after {
-    border: none;
-    background: #2563eb;
-    width: 12px;
-    height: 12px;
-    right: -4px;
-    transform: translateY(-50%) rotate(45deg);
-    border-radius: 2px;
-}
-
-/* Pas de flèche */
-#agent-widget .bubble.no-arrow::after {
-    display: none;
-}
-
-/* Style élégant */
-#agent-widget .bubble.elegant {
-    background: linear-gradient(135deg, #2563eb, #1d4ed8);
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3),
-        0 8px 24px rgba(0, 0, 0, 0.2);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-/* ═══════════════════════════════════════════════════════
-   RESPONSIVE MOBILE
+   RESPONSIVE BULLE
    ═══════════════════════════════════════════════════════ */
 @media (max-width: 480px) {
     #agent-widget .bubble {
         max-width: 200px;
-        right: 60px;
         font-size: 0.85rem;
         padding: 8px 12px;
+        right: calc(56px + 14px);
+        /* bouton 56px + marge */
+        bottom: 8px;
     }
 
     #agent-widget .bubble::after {
@@ -208,25 +136,27 @@
     #agent-widget .bubble {
         max-width: 160px;
         font-size: 0.8rem;
-        right: 56px;
     }
 }
 
 /* ═══════════════════════════════════════════════════════
-   RESTE DU CHATBOT (inchangé)
+   BOUTON FLOTTANT
    ═══════════════════════════════════════════════════════ */
 #agent-toggle {
     width: 56px;
     height: 56px;
     border-radius: 50%;
     background: #2563eb;
-    color: white;
+    color: #fff;
     font-size: 1.8rem;
     border: none;
     cursor: pointer;
     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
+/* ═══════════════════════════════════════════════════════
+   PANEL PRINCIPAL
+   ═══════════════════════════════════════════════════════ */
 #agent-panel {
     display: none;
     flex-direction: column;
@@ -234,18 +164,24 @@
     bottom: 90px;
     right: 20px;
     width: 360px;
+    height: 500px;
     max-height: 500px;
     background: #1e1e1e;
     border-radius: 16px;
     box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
     overflow: hidden;
+    z-index: 10000;
+    transition: all 0.3s ease;
 }
 
 #agent-widget.open #agent-panel {
     display: flex;
 }
 
+/* Header du panel */
 #agent-header {
+    position: relative;
+    z-index: 10002;
     background: #111;
     color: #fff;
     padding: 12px;
@@ -254,17 +190,33 @@
     align-items: center;
     font-weight: bold;
     font-size: 1rem;
+    pointer-events: auto;
+}
+
+/* Boutons d’action du header */
+#agent-controls {
+    display: flex;
+    gap: 6px;
 }
 
 #agent-controls button {
+    position: relative;
+    z-index: 10003;
     background: none;
-    color: white;
+    color: #fff;
     border: none;
-    font-size: 1rem;
+    font-size: 1.1rem;
     cursor: pointer;
-    margin-left: 8px;
+    padding: 4px 6px;
+    transition: transform 0.2s ease, color 0.2s ease;
 }
 
+#agent-controls button:hover {
+    color: #3b82f6;
+    transform: scale(1.15);
+}
+
+/* Zone de messages */
 #agent-log {
     flex: 1;
     overflow-y: auto;
@@ -295,6 +247,7 @@
     word-wrap: break-word;
 }
 
+/* Formulaire du bas */
 #agent-form {
     display: flex;
     padding: 10px;
@@ -318,13 +271,14 @@
 
 #agent-form button[type="submit"] {
     background: #2563eb;
-    color: white;
+    color: #fff;
     border: none;
     border-radius: 8px;
     padding: 0 16px;
     cursor: pointer;
 }
 
+/* Toolbar (clear / FAQ) */
 #agent-toolbar {
     display: flex;
     gap: 8px;
@@ -342,7 +296,7 @@
     font-size: 1rem;
 }
 
-/* micro */
+/* Micro */
 #agent-mic {
     background: #2a2a2a;
     color: #eee;
@@ -379,6 +333,7 @@
     }
 }
 
+/* Mentions légales */
 .legal-panel {
     background: #111;
     color: #eee;
@@ -392,7 +347,7 @@
 
 .legal-btn-close {
     background: #2563eb;
-    color: white;
+    color: #fff;
     border: none;
     padding: 8px 16px;
     border-radius: 6px;
@@ -404,84 +359,9 @@
     background: #1d4ed8;
 }
 
-/* ═══════════════════════════════════════════════════════
-   ✅ FIX : boutons réduire / agrandir / fermer cliquables
-   ═══════════════════════════════════════════════════════ */
-
-/* Le header passe au-dessus du panel */
-#agent-header {
-    position: relative;
-    z-index: 10002;
-    background: #111;
-    color: #fff;
-    padding: 12px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-weight: bold;
-    font-size: 1rem;
-    pointer-events: auto !important;
-}
-
-/* Conteneur des boutons de contrôle */
-#agent-controls {
-    display: flex;
-    gap: 6px;
-}
-
-/* Boutons d’action (agrandir, réduire, fermer) */
-#agent-controls button {
-    position: relative;
-    z-index: 10003;
-    background: none;
-    color: #fff;
-    border: none;
-    font-size: 1.1rem;
-    cursor: pointer;
-    padding: 4px 6px;
-    transition: transform 0.2s ease, color 0.2s ease;
-    pointer-events: auto !important;
-}
-
-/* Hover visuel clair */
-#agent-controls button:hover {
-    color: #3b82f6;
-    transform: scale(1.15);
-}
-
-/* Le panel reste en dessous du header */
-#agent-panel {
-    z-index: 10000;
-    /* inférieur au header */
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    width: 360px;
-    max-height: 500px;
-    background: #1e1e1e;
-    border-radius: 16px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
-    overflow: hidden;
-}
-
 /* ═══════════════════════════════════════════════
-   🧩 États du chatbot : agrandi / réduit
+   ÉTATS : agrandi / réduit
    ═══════════════════════════════════════════════ */
-
-/* Quand on agrandit */
-/* ═══════════════════════════════════════════════
-   🧩 États du chatbot : agrandi / réduit
-   ═══════════════════════════════════════════════ */
-
-/* ✅ Taille normale (par défaut) */
-#agent-panel {
-    width: 360px;
-    height: 500px;
-    max-height: 500px;
-    transition: all 0.3s ease;
-}
-
-/* ✅ Mode agrandi */
 #agent-widget.max #agent-panel {
     width: 90vw;
     height: 80vh;
@@ -491,18 +371,14 @@
     border-radius: 20px;
 }
 
-/* ✅ Mode réduit → revient simplement à la taille initiale */
 #agent-widget.min #agent-panel {
     width: 360px;
-    /* même largeur qu’à l’origine */
     height: 500px;
-    /* même hauteur qu’à l’origine */
     border-radius: 16px;
     overflow: hidden;
-    transition: all 0.3s ease;
 }
 
-/* ✅ Adaptation mobile */
+/* Adaptation mobile panel */
 @media (max-width: 600px) {
     #agent-widget.max #agent-panel {
         width: 95vw;
