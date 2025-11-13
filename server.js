@@ -86,12 +86,19 @@ app.use((req, res, next) => {
 app.use(cors({
   origin: (origin, cb) => {
     const allowed = [
-      "https://www.proactifsystem.com",
       "https://proactifsystem.com",
       "https://proactifsysteme.onrender.com"
     ];
-    if (!origin || allowed.includes(origin)) cb(null, true);
-    else cb(new Error("CORS BLOCKED: " + origin));
+
+    // ✅ Autorise les requêtes sans origin (serveur-à-serveur, tests)
+    if (!origin) return cb(null, true);
+
+    if (allowed.includes(origin)) {
+      cb(null, true);
+    } else {
+      logger.warn('CORS blocked', { origin });
+      cb(new Error('CORS policy: origin not allowed'));
+    }
   },
   credentials: true
 }));
@@ -108,18 +115,33 @@ function getSessionId(req, res) {
     res.cookie('sessionId', sid, {
       httpOnly: true,
       secure: true,          // obligatoire pour iPhone
-      sameSite: 'none',      // obligatoire pour iPhone
+      sameSite: 'none',
+      domain: '.proactifsystem.com',     // obligatoire pour iPhone
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
     logger.info('New session created', { sessionId: sid });
   }
   return sid;
 }
-
 app.use((req, res, next) => {
   getSessionId(req, res);
   res.set('charset', 'utf-8');
-  logger.info('Request', { method: req.method, path: req.path, ip: req.ip });
+
+  // ✅ Routes à ignorer dans les logs
+  const ignoredPaths = ['/favicon.ico', '/health', '/style.css', '/chatbot.css'];
+  const shouldLog = !ignoredPaths.includes(req.path);
+
+  const isDev = process.env.NODE_ENV !== 'production';
+  const isApiRoute = req.path.startsWith('/api/');
+
+  if (shouldLog && (isDev || isApiRoute)) {
+    logger.info('Request', {
+      method: req.method,
+      path: req.path,
+      ...(isApiRoute && { ip: req.ip })
+    });
+  }
+
   next();
 });
 
@@ -491,7 +513,28 @@ app.get('/api/history', async (req, res) => {
     res.status(500).json({ ok: false, messages: [] });
   }
 });
-
+app.post('/api/history/clear', async (req, res) => {
+  try {
+    const sid = getSessionId(req, res);
+    await withFileQueue(CONVOS_PATH, async () => {
+      const convos = await readJSON(CONVOS_PATH);
+      if (convos[sid]) {
+        delete convos[sid];
+        await atomicWriteJSON(CONVOS_PATH, convos);
+      }
+    });
+    logger.info('History cleared', { sessionId: sid });
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('Clear history error', { error: err.message });
+    res.status(500).json({ ok: false });
+  }
+});
+app.get('/api/config', (req, res) => {
+  res.json({
+    recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY || '6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G'
+  });
+});
 /* ────────────────────────────────────────────────────────────
    Listen
 ──────────────────────────────────────────────────────────── */

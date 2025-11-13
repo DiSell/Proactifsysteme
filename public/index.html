@@ -69,7 +69,7 @@
     </section>
 
     <section id="contact" class="contact">
-      <h2>Laissez-nous vos informations de contact pour qu’on puisse échanger sur vos besoins.</h2>
+      <h2>Laissez-nous vos informations de contact pour qu'on puisse échanger sur vos besoins.</h2>
 
       <form id="lead-form" class="form" autocomplete="on">
         <input name="name" type="text" placeholder="Votre nom" autocomplete="name" required />
@@ -78,14 +78,7 @@
         <label for="phone">Numéro de téléphone (avec indicatif)</label>
         <input id="phone" name="phone" type="tel" placeholder="+33 6 12 34 56 78" autocomplete="tel" required />
 
-        <small style="display:block; margin-top:-0.5em; margin-bottom:1em; font-size:0.85em; color:#ccc;">
-          
-        </small>
-
         <textarea name="message" rows="5" placeholder="Décrivez votre besoin" autocomplete="off"></textarea>
-
-        <!-- ✅ reCAPTCHA invisible (v3) -->
-        <input type="hidden" name="token" id="recaptcha-token">
 
         <button class="btn" type="submit">Envoyer</button>
         <p id="lead-status" class="status" aria-live="polite"></p>
@@ -97,7 +90,6 @@
     <p>© 2025 ProactifSystème — IA sur mesure</p>
     <button id="legal-toggle" class="legal-btn">Mentions légales & Confidentialité</button>
 
-    <!-- 🧩 Panneau masqué -->
     <div id="legal-panel" class="legal-panel" style="display:none;">
       <h3>Mentions légales</h3>
       <p><strong>Éditeur :</strong> ProactifSystème, gérée par Didier Sellin.</p>
@@ -107,7 +99,7 @@
       <h3>Politique de confidentialité</h3>
       <p>Les données collectées via ce site (nom, email, téléphone, message) sont utilisées uniquement
         pour répondre à vos demandes et ne sont jamais partagées avec des tiers.</p>
-      <p>Vos données personnelles seront conservées pendant une durée d’un an à compter de leur collecte. Au-delà
+      <p>Vos données personnelles seront conservées pendant une durée d'un an à compter de leur collecte. Au-delà
         de cette période, elles seront supprimées ou anonymisées conformément à nos engagements en matière de protection
         des données.</p>
       <p>Vous pouvez demander la suppression de vos données en écrivant à
@@ -117,7 +109,7 @@
       <p>Ce site utilise Google reCAPTCHA pour se protéger contre le spam.
         <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Politique de confidentialité</a>
         et <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Conditions d'utilisation</a> de
-        Google s’appliquent.
+        Google s'appliquent.
       </p>
 
       <button id="legal-close" class="legal-btn-close">Fermer</button>
@@ -142,7 +134,7 @@
       <div id="agent-log"></div>
 
       <div id="agent-toolbar">
-        <button id="agent-clear" title="Effacer l’historique">🗑️</button>
+        <button id="agent-clear" title="Effacer l'historique">🗑️</button>
         <button id="faq-open" title="Questions fréquentes">📋 FAQ</button>
       </div>
 
@@ -166,12 +158,13 @@
       const closeBtn = document.getElementById("legal-close");
 
       if (!toggleBtn || !legalPanel) return;
-      legalPanel.style.display = "none";
 
       toggleBtn.addEventListener("click", () => {
         const isVisible = legalPanel.style.display === "block";
         legalPanel.style.display = isVisible ? "none" : "block";
-        legalPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+        if (!isVisible) {
+          legalPanel.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
       });
 
       closeBtn?.addEventListener("click", () => {
@@ -190,39 +183,114 @@
     });
   </script>
 
-  <!-- ✅ Script reCAPTCHA v3 -->
-  <script src="https://www.google.com/recaptcha/api.js?render=6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G"></script>
+  <!-- ✅ Chargement dynamique reCAPTCHA + gestion formulaire -->
   <script>
+    // Charge la clé reCAPTCHA depuis le serveur
+    fetch('/api/config')
+      .then(r => r.json())
+      .then(config => {
+        const script = document.createElement('script');
+        script.src = `https://www.google.com/recaptcha/api.js?render=${config.recaptchaSiteKey}`;
+        document.head.appendChild(script);
+        window.RECAPTCHA_KEY = config.recaptchaSiteKey;
+      })
+      .catch(err => {
+        console.error('Erreur config reCAPTCHA:', err);
+        // Fallback si /api/config échoue
+        window.RECAPTCHA_KEY = '6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G';
+        const script = document.createElement('script');
+        script.src = `https://www.google.com/recaptcha/api.js?render=${window.RECAPTCHA_KEY}`;
+        document.head.appendChild(script);
+      });
+
+    // Gestion soumission formulaire
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('lead-form');
+      const status = document.getElementById('lead-status');
+
       if (!form) return;
 
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        grecaptcha.ready(async () => {
-          const token = await grecaptcha.execute('6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G', { action: 'submit' });
+        // Validation côté client
+        const nameInput = form.querySelector('input[name="name"]');
+        const emailInput = form.querySelector('input[name="email"]');
+        const phoneInput = form.querySelector('input[name="phone"]');
 
-          const data = Object.fromEntries(new FormData(form).entries());
-          data.token = token;
+        if (!nameInput.value.trim()) {
+          alert('❌ Veuillez entrer votre nom.');
+          nameInput.focus();
+          return;
+        }
 
-          const res = await fetch('/api/lead', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(data)
-          });
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(emailInput.value)) {
+          alert('❌ Adresse e-mail invalide.');
+          emailInput.focus();
+          return;
+        }
 
-          const result = await res.json();
-          const status = document.getElementById('lead-status');
+        const phoneRegex = /^(\+?\d{1,3}[- ]?)?\d{6,14}$/;
+        if (phoneInput.value && !phoneRegex.test(phoneInput.value.replace(/\s+/g, ''))) {
+          alert('❌ Numéro de téléphone invalide.\nFormat : +33 6 12 34 56 78');
+          phoneInput.focus();
+          return;
+        }
+
+        // Affiche loader
+        if (status) {
+          status.textContent = '⏳ Envoi en cours...';
+          status.style.color = '#ffaa00';
+        }
+
+        // Vérifie que reCAPTCHA est chargé
+        if (typeof grecaptcha === 'undefined' || !window.RECAPTCHA_KEY) {
           if (status) {
-            status.textContent = result.message || 'Erreur serveur.';
-            status.style.color = result.ok ? '#00cc66' : '#ff4444';
+            status.textContent = '⚠️ reCAPTCHA non chargé. Réessayez.';
+            status.style.color = '#ff4444';
           }
+          return;
+        }
 
-          if (result.ok) form.reset();
-        });
+        try {
+          await grecaptcha.ready(async () => {
+            const token = await grecaptcha.execute(window.RECAPTCHA_KEY, { action: 'submit' });
+
+            const data = Object.fromEntries(new FormData(form).entries());
+            data.token = token;
+
+            const res = await fetch('/api/lead', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(data)
+            });
+
+            const result = await res.json();
+
+            if (status) {
+              status.textContent = result.message || (result.ok ? '✅ Message envoyé !' : '❌ Erreur');
+              status.style.color = result.ok ? '#00cc66' : '#ff4444';
+            }
+
+            if (result.ok) {
+              form.reset();
+              alert('✅ Votre message a bien été envoyé.\nNous vous répondrons sous 24h.');
+            } else {
+              alert('⚠️ ' + (result.message || 'Une erreur est survenue.'));
+            }
+          });
+        } catch (err) {
+          console.error('Erreur formulaire:', err);
+          if (status) {
+            status.textContent = '❌ Erreur réseau.';
+            status.style.color = '#ff4444';
+          }
+          alert('❌ Impossible de contacter le serveur.');
+        }
       });
     });
   </script>
 </body>
+
 </html>
