@@ -1,5 +1,5 @@
 (() => {
-  const API_BASE = window.location.origin;
+  const API_BASE = window.API_BASE_URL || (window.location.origin + "/api");
 
   const $ = (sel) => document.querySelector(sel);
   const log = (...args) => console.debug('[agent]', ...args);
