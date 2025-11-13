@@ -392,3 +392,137 @@
         height: 460px;
     }
 }
+
+/* ════════════════════════════════════════════
+   STYLES FAQ — popup interne au chatbot
+   ════════════════════════════════════════════ */
+
+.faq-box {
+    position: absolute;
+    bottom: 80px;
+    right: 12px;
+    width: 320px;
+    background: #1f2937;
+    border: 1px solid #374151;
+    border-radius: 12px;
+    padding: 16px;
+    z-index: 9999;
+
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
+
+    display: none;
+    animation: faqFadeIn 0.2s ease-out;
+}
+
+@keyframes faqFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.faq-content {
+    color: #e5e7eb;
+    font-size: 0.95rem;
+    line-height: 1.35rem;
+    margin-bottom: 10px;
+}
+
+.faq-content strong {
+    color: #4ade80;
+    cursor: pointer;
+    font-size: 1rem;
+    display: inline-block;
+    margin-bottom: 6px;
+}
+
+.faq-nav {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 12px;
+}
+
+.faq-btn,
+.faq-btn-close {
+    background: #374151;
+    color: #fff;
+    border: none;
+    padding: 6px 12px;
+    font-size: 1rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.faq-btn:hover {
+    background: #4b5563;
+}
+
+.faq-btn-close {
+    background: #ef4444;
+}
+
+.faq-btn-close:hover {
+    background: #dc2626;
+}
+
+/* Bouton FAQ dans le toolbar du chatbot */
+#faq-open {
+    background: #374151 !important;
+    color: #fff !important;
+    border-radius: 6px !important;
+}
+
+#faq-open:hover {
+    background: #4b5563 !important;
+}
+
+.capabilities-carousel {
+    margin-top: 10px;
+    overflow: hidden;
+    height: 40px;
+    position: relative;
+}
+
+.carousel-track {
+    display: flex;
+    animation: carouselMove 16s infinite linear;
+}
+
+.carousel-item {
+    min-width: 100%;
+    color: #9ca3af;
+    font-size: 0.85rem;
+    padding-left: 6px;
+}
+
+@keyframes carouselMove {
+    0% {
+        transform: translateX(0%);
+    }
+
+    20% {
+        transform: translateX(-100%);
+    }
+
+    40% {
+        transform: translateX(-200%);
+    }
+
+    60% {
+        transform: translateX(-300%);
+    }
+
+    80% {
+        transform: translateX(-400%);
+    }
+
+    100% {
+        transform: translateX(-500%);
+    }
+}

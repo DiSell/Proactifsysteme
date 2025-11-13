@@ -6,23 +6,17 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>ProactifSystem — IA sur mesure</title>
 
-  <!-- ✅ Favicon universel -->
+  <!-- FAVICONS -->
   <link rel="icon" href="/favicon.ico" sizes="any">
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-
-  <!-- ✅ Apple / iOS -->
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-
-  <!-- ✅ Android / PWA -->
   <link rel="icon" type="image/png" sizes="192x192" href="/android-chrome-192x192.png">
   <link rel="icon" type="image/png" sizes="512x512" href="/android-chrome-512x512.png">
-
-  <!-- ✅ Manifest + couleur de thème -->
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#2563eb">
 
-  <!-- Fonts & styles -->
+  <!-- FONTS & CSS -->
   <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="style.css" />
@@ -30,6 +24,9 @@
 </head>
 
 <body>
+  <!-- ════════════════════════════
+       HERO + NAVIGATION
+  ════════════════════════════ -->
   <header class="hero">
     <nav class="nav">
       <div class="brand">ProactifSystem</div>
@@ -39,46 +36,58 @@
         <button id="faq-menu-btn" class="faq-link">❓ FAQ</button>
       </div>
     </nav>
+
     <div class="hero-inner">
       <h1>L'IA au service de votre productivité</h1>
       <p>Automatisation intelligente, <strong>analyse de graphiques IA</strong>, chatbots et dashboards.</p>
+
       <div class="cta">
         <a class="btn" id="open-agent" href="#">Parler à l'agent</a>
       </div>
     </div>
   </header>
 
+  <!-- ════════════════════════════
+       BENTO SOLUTIONS
+  ════════════════════════════ -->
   <main>
     <section id="solutions" class="bento">
       <article class="card">
         <h3>Applications & Logiciels sur mesure</h3>
         <p>Outils web, scripts, intégrations API, automatisations adaptées à votre métier.</p>
       </article>
+
       <article class="card">
         <h3>Automatisation IA</h3>
         <p>Emails, CRM, reporting, workflows sans tâches répétitives.</p>
       </article>
+
       <article class="card">
         <h3>Analyse de données & Dashboards</h3>
         <p>KPIs, rapports visuels, décision assistée par l'IA.</p>
       </article>
+
       <article class="card">
         <h3>Chatbots & Agents</h3>
         <p>Support, qualification, collecte de leads, FAQ intelligente.</p>
       </article>
     </section>
 
+    <!-- ════════════════════════════
+         CONTACT / FORMULAIRE
+    ════════════════════════════ -->
     <section id="contact" class="contact">
-      <h2>Laissez-nous vos informations de contact pour qu'on puisse échanger sur vos besoins.</h2>
+      <h2>Laissez-nous vos informations de contact</h2>
 
       <form id="lead-form" class="form" autocomplete="on">
-        <input name="name" type="text" placeholder="Votre nom" autocomplete="name" required />
-        <input name="company" type="text" placeholder="Nom de votre entreprise" autocomplete="organization" />
-        <input name="email" type="email" placeholder="Votre e-mail" autocomplete="email" required />
-        <label for="phone">Numéro de téléphone (avec indicatif)</label>
-        <input id="phone" name="phone" type="tel" placeholder="+33 6 12 34 56 78" autocomplete="tel" required />
+        <input name="name" type="text" placeholder="Votre nom" required />
+        <input name="company" type="text" placeholder="Nom de votre entreprise" />
+        <input name="email" type="email" placeholder="Votre e-mail" required />
 
-        <textarea name="message" rows="5" placeholder="Décrivez votre besoin" autocomplete="off"></textarea>
+        <label for="phone">Numéro de téléphone (avec indicatif)</label>
+        <input id="phone" name="phone" type="tel" placeholder="+33 6 12 34 56 78" required />
+
+        <textarea name="message" rows="5" placeholder="Décrivez votre besoin"></textarea>
 
         <button class="btn" type="submit">Envoyer</button>
         <p id="lead-status" class="status" aria-live="polite"></p>
@@ -86,8 +95,12 @@
     </section>
   </main>
 
+  <!-- ════════════════════════════
+       FOOTER + MENTIONS LÉGALES
+  ════════════════════════════ -->
   <footer class="footer">
     <p>© 2025 ProactifSystème — IA sur mesure</p>
+
     <button id="legal-toggle" class="legal-btn">Mentions légales & Confidentialité</button>
 
     <div id="legal-panel" class="legal-panel" style="display:none;">
@@ -97,27 +110,21 @@
       <p><strong>Hébergement :</strong> Serveur privé (Node.js / Express).</p>
 
       <h3>Politique de confidentialité</h3>
-      <p>Les données collectées via ce site (nom, email, téléphone, message) sont utilisées uniquement
-        pour répondre à vos demandes et ne sont jamais partagées avec des tiers.</p>
-      <p>Vos données personnelles seront conservées pendant une durée d'un an à compter de leur collecte. Au-delà
-        de cette période, elles seront supprimées ou anonymisées conformément à nos engagements en matière de protection
-        des données.</p>
-      <p>Vous pouvez demander la suppression de vos données en écrivant à
-        <a href="mailto:contact@proactifsysteme.fr">contact@proactifsysteme.fr</a>.
-      </p>
+      <p>Les données sont utilisées uniquement pour répondre à vos demandes et ne sont jamais partagées.</p>
 
-      <p>Ce site utilise Google reCAPTCHA pour se protéger contre le spam.
-        <a href="https://policies.google.com/privacy" target="_blank" rel="noopener">Politique de confidentialité</a>
-        et <a href="https://policies.google.com/terms" target="_blank" rel="noopener">Conditions d'utilisation</a> de
-        Google s'appliquent.
+      <p>Vous pouvez demander la suppression de vos données via
+        <a href="mailto:contact@proactifsysteme.fr">contact@proactifsysteme.fr</a>.
       </p>
 
       <button id="legal-close" class="legal-btn-close">Fermer</button>
     </div>
   </footer>
 
-  <!-- ✅ Chatbot -->
+  <!-- ════════════════════════════
+       CHATBOT + FAQ
+  ════════════════════════════ -->
   <div id="agent-widget" aria-live="polite">
+
     <div class="bubble">Je suis là pour vous aider !</div>
     <button id="agent-toggle" aria-label="Ouvrir le chat">🤖</button>
 
@@ -125,44 +132,55 @@
       <div id="agent-header">
         <strong>Agent ProactifSystème</strong>
         <div id="agent-controls">
-          <button id="agent-minimize" type="button" title="Réduire" aria-label="Réduire">—</button>
-          <button id="agent-expand" type="button" title="Agrandir" aria-label="Agrandir">⤢</button>
-          <button id="agent-close" type="button" title="Fermer" aria-label="Fermer">✕</button>
+          <button id="agent-minimize" title="Réduire">—</button>
+          <button id="agent-expand" title="Agrandir">⤢</button>
+          <button id="agent-close" title="Fermer">✕</button>
         </div>
       </div>
 
       <div id="agent-log"></div>
 
       <div id="agent-toolbar">
-        <button id="agent-clear" title="Effacer l'historique">🗑️</button>
-        <button id="faq-open" title="Questions fréquentes">📋 FAQ</button>
+        <button id="agent-clear">🗑️</button>
+        <button id="faq-open">📋 FAQ</button>
       </div>
 
       <form id="agent-form" autocomplete="off">
         <input id="agent-input" type="text" placeholder="Posez votre question…" />
-        <button id="agent-mic" type="button" title="Parler">🎤</button>
+        <button id="agent-mic" type="button">🎤</button>
         <button type="submit">Envoyer</button>
       </form>
     </div>
+
+    <!-- FAQ POPUP -->
+    <div id="faq-box" class="faq-box" style="display:none;">
+      <div id="faq-content" class="faq-content"></div>
+
+      <div class="faq-nav">
+        <button id="faq-prev" class="faq-btn">⏮</button>
+        <button id="faq-next" class="faq-btn">⏭</button>
+        <button id="faq-close" class="faq-btn-close">❌</button>
+      </div>
+    </div>
+
   </div>
 
-  <!-- ✅ Scripts -->
+  <!-- ════════════════════════════
+       SCRIPTS
+  ════════════════════════════ -->
   <script src="/js/config.js" defer></script>
   <script src="/js/agent.js?v=10"></script>
 
-  <!-- ✅ Script Mentions légales -->
+  <!-- Mentions légales -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const toggleBtn = document.getElementById("legal-toggle");
       const legalPanel = document.getElementById("legal-panel");
       const closeBtn = document.getElementById("legal-close");
 
-      if (!toggleBtn || !legalPanel) return;
-
-      toggleBtn.addEventListener("click", () => {
-        const isVisible = legalPanel.style.display === "block";
-        legalPanel.style.display = isVisible ? "none" : "block";
-        if (!isVisible) {
+      toggleBtn?.addEventListener("click", () => {
+        legalPanel.style.display = legalPanel.style.display === "block" ? "none" : "block";
+        if (legalPanel.style.display === "block") {
           legalPanel.scrollIntoView({ behavior: "smooth", block: "center" });
         }
       });
@@ -171,21 +189,19 @@
         legalPanel.style.display = "none";
       });
 
+      // Click extérieur pour fermer
       document.addEventListener("click", (e) => {
-        if (
-          legalPanel.style.display === "block" &&
+        if (legalPanel.style.display === "block" &&
           !legalPanel.contains(e.target) &&
-          e.target !== toggleBtn
-        ) {
+          e.target !== toggleBtn) {
           legalPanel.style.display = "none";
         }
       });
     });
   </script>
 
-  <!-- ✅ Chargement dynamique reCAPTCHA + gestion formulaire -->
+  <!-- reCAPTCHA + Formulaire lead -->
   <script>
-    // Charge la clé reCAPTCHA depuis le serveur
     fetch('/api/config')
       .then(r => r.json())
       .then(config => {
@@ -194,16 +210,13 @@
         document.head.appendChild(script);
         window.RECAPTCHA_KEY = config.recaptchaSiteKey;
       })
-      .catch(err => {
-        console.error('Erreur config reCAPTCHA:', err);
-        // Fallback si /api/config échoue
+      .catch(() => {
         window.RECAPTCHA_KEY = '6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G';
         const script = document.createElement('script');
         script.src = `https://www.google.com/recaptcha/api.js?render=${window.RECAPTCHA_KEY}`;
         document.head.appendChild(script);
       });
 
-    // Gestion soumission formulaire
     document.addEventListener('DOMContentLoaded', () => {
       const form = document.getElementById('lead-form');
       const status = document.getElementById('lead-status');
@@ -213,84 +226,53 @@
       form.addEventListener('submit', async (e) => {
         e.preventDefault();
 
-        // Validation côté client
-        const nameInput = form.querySelector('input[name="name"]');
-        const emailInput = form.querySelector('input[name="email"]');
-        const phoneInput = form.querySelector('input[name="phone"]');
+        const name = form.querySelector('input[name="name"]');
+        const email = form.querySelector('input[name="email"]');
+        const phone = form.querySelector('input[name="phone"]');
 
-        if (!nameInput.value.trim()) {
-          alert('❌ Veuillez entrer votre nom.');
-          nameInput.focus();
-          return;
+        if (!name.value.trim()) {
+          alert("❌ Veuillez entrer votre nom.");
+          return name.focus();
         }
 
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        if (!emailRegex.test(emailInput.value)) {
-          alert('❌ Adresse e-mail invalide.');
-          emailInput.focus();
-          return;
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
+          alert("❌ Adresse email invalide.");
+          return email.focus();
         }
 
-        const phoneRegex = /^(\+?\d{1,3}[- ]?)?\d{6,14}$/;
-        if (phoneInput.value && !phoneRegex.test(phoneInput.value.replace(/\s+/g, ''))) {
-          alert('❌ Numéro de téléphone invalide.\nFormat : +33 6 12 34 56 78');
-          phoneInput.focus();
-          return;
+        if (phone.value && !/^(\\+?\\d{1,3}[- ]?)?\\d{6,14}$/.test(phone.value)) {
+          alert("❌ Numéro de téléphone invalide.");
+          return phone.focus();
         }
 
-        // Affiche loader
-        if (status) {
-          status.textContent = '⏳ Envoi en cours...';
-          status.style.color = '#ffaa00';
-        }
+        status.textContent = "⏳ Envoi en cours...";
+        status.style.color = "#ffaa00";
 
-        // Vérifie que reCAPTCHA est chargé
-        if (typeof grecaptcha === 'undefined' || !window.RECAPTCHA_KEY) {
-          if (status) {
-            status.textContent = '⚠️ reCAPTCHA non chargé. Réessayez.';
-            status.style.color = '#ff4444';
-          }
-          return;
-        }
+        await grecaptcha.ready(async () => {
+          const token = await grecaptcha.execute(window.RECAPTCHA_KEY, { action: 'submit' });
+          const data = Object.fromEntries(new FormData(form).entries());
+          data.token = token;
 
-        try {
-          await grecaptcha.ready(async () => {
-            const token = await grecaptcha.execute(window.RECAPTCHA_KEY, { action: 'submit' });
-
-            const data = Object.fromEntries(new FormData(form).entries());
-            data.token = token;
-
-            const res = await fetch('/api/lead', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(data)
-            });
-
-            const result = await res.json();
-
-            if (status) {
-              status.textContent = result.message || (result.ok ? '✅ Message envoyé !' : '❌ Erreur');
-              status.style.color = result.ok ? '#00cc66' : '#ff4444';
-            }
-
-            if (result.ok) {
-              form.reset();
-              alert('✅ Votre message a bien été envoyé.\nNous vous répondrons sous 24h.');
-            } else {
-              alert('⚠️ ' + (result.message || 'Une erreur est survenue.'));
-            }
+          const res = await fetch('/api/lead', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
           });
-        } catch (err) {
-          console.error('Erreur formulaire:', err);
-          if (status) {
-            status.textContent = '❌ Erreur réseau.';
-            status.style.color = '#ff4444';
+
+          const result = await res.json();
+
+          status.textContent = result.message || (result.ok ? "✅ Message envoyé !" : "❌ Erreur");
+          status.style.color = result.ok ? "#00cc66" : "#ff4444";
+
+          if (result.ok) {
+            alert("Votre message a bien été envoyé !");
+            form.reset();
           }
-          alert('❌ Impossible de contacter le serveur.');
-        }
+        });
       });
     });
   </script>
+
 </body>
 
 </html>
