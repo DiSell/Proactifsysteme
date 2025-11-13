@@ -83,15 +83,18 @@ app.use((req, res, next) => {
 /* ────────────────────────────────────────────────────────────
    CORS
 ──────────────────────────────────────────────────────────── */
+/* ────────────────────────────────────────────────────────────
+   CORS (ACCEPTER WWW ET NON-WWW)
+──────────────────────────────────────────────────────────── */
 app.use(cors({
   origin: (origin, cb) => {
     const allowed = [
       "https://proactifsystem.com",
+      "https://www.proactifsystem.com",
       "https://proactifsysteme.onrender.com"
     ];
 
-    // ✅ Autorise les requêtes sans origin (serveur-à-serveur, tests)
-    if (!origin) return cb(null, true);
+    if (!origin) return cb(null, true); // OK pour tests / server-to-server
 
     if (allowed.includes(origin)) {
       cb(null, true);
@@ -102,6 +105,7 @@ app.use(cors({
   },
   credentials: true
 }));
+
 
 
 /* ────────────────────────────────────────────────────────────
