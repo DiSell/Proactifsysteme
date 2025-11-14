@@ -537,3 +537,18 @@
         transform: translateX(-500%);
     }
 }
+
+/* FIX Edge : empêche la découpe des boutons du chatbot */
+#agent-panel {
+    overflow: visible !important;
+}
+
+#agent-toolbar {
+    position: relative;
+    z-index: 99999 !important;
+}
+
+#agent-form {
+    position: relative;
+    z-index: 99999 !important;
+}
