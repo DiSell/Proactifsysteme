@@ -198,13 +198,17 @@
 }
 
 .msg span {
-    display: inline-block;
+    display: inline-flex;
     background: #333;
     padding: 6px 10px;
     border-radius: 10px;
-    max-width: 90%;
-    word-wrap: break-word;
+    max-width: 100%;
+    white-space: normal;
+    line-height: 1.4;
+    word-break: break-word;
+    overflow-wrap: break-word;
 }
+
 
 /* Formulaire */
 #agent-form {
