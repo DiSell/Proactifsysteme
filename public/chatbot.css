@@ -24,18 +24,15 @@
     bottom: 0;
     right: 70px;
     z-index: 10050;
-    /* au-dessus du panel */
     display: none;
     animation: bubble-slide-in 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards,
         bubble-float 2.4s ease-in-out 0.5s infinite;
 }
 
-/* visible quand le chat n’est pas ouvert */
 #agent-widget:not(.open) .bubble {
     display: block;
 }
 
-/* Flèche de la bulle */
 #agent-widget .bubble::after {
     content: '';
     position: absolute;
@@ -79,51 +76,13 @@
     }
 }
 
-@keyframes bubble-pulse {
-
-    0%,
-    100% {
-        transform: scale(1);
-    }
-
-    50% {
-        transform: scale(1.03);
-    }
-}
-
-@keyframes bubble-sway {
-
-    0%,
-    100% {
-        transform: translateX(0);
-    }
-
-    50% {
-        transform: translateX(-6px);
-    }
-}
-
-/* Variantes (si tu veux les activer via des classes) */
-#agent-widget .bubble.pulse {
-    animation: bubble-slide-in 0.4s ease-out forwards,
-        bubble-pulse 2s ease-in-out 0.5s infinite;
-}
-
-#agent-widget .bubble.sway {
-    animation: bubble-slide-in 0.4s ease-out forwards,
-        bubble-sway 3s ease-in-out 0.4s infinite;
-}
-
-/* ═══════════════════════════════════════════════════════
-   RESPONSIVE BULLE
-   ═══════════════════════════════════════════════════════ */
+/* Responsive bulle */
 @media (max-width: 480px) {
     #agent-widget .bubble {
         max-width: 200px;
         font-size: 0.85rem;
         padding: 8px 12px;
         right: calc(56px + 14px);
-        /* bouton 56px + marge */
         bottom: 8px;
     }
 
@@ -178,7 +137,7 @@
     display: flex;
 }
 
-/* Header du panel */
+/* Header */
 #agent-header {
     position: relative;
     z-index: 10002;
@@ -190,18 +149,14 @@
     align-items: center;
     font-weight: bold;
     font-size: 1rem;
-    pointer-events: auto;
 }
 
-/* Boutons d’action du header */
 #agent-controls {
     display: flex;
     gap: 6px;
 }
 
 #agent-controls button {
-    position: relative;
-    z-index: 10003;
     background: none;
     color: #fff;
     border: none;
@@ -247,7 +202,7 @@
     word-wrap: break-word;
 }
 
-/* Formulaire du bas */
+/* Formulaire */
 #agent-form {
     display: flex;
     padding: 10px;
@@ -278,7 +233,7 @@
     cursor: pointer;
 }
 
-/* Toolbar (clear / FAQ) */
+/* Toolbar */
 #agent-toolbar {
     display: flex;
     gap: 8px;
@@ -352,16 +307,13 @@
     padding: 8px 16px;
     border-radius: 6px;
     cursor: pointer;
-    margin-top: 10px;
 }
 
 .legal-btn-close:hover {
     background: #1d4ed8;
 }
 
-/* ═══════════════════════════════════════════════
-   ÉTATS : agrandi / réduit
-   ═══════════════════════════════════════════════ */
+/* États : agrandi / réduit */
 #agent-widget.max #agent-panel {
     width: 90vw;
     height: 80vh;
@@ -378,7 +330,7 @@
     overflow: hidden;
 }
 
-/* Adaptation mobile panel */
+/* Adaptation mobile */
 @media (max-width: 600px) {
     #agent-widget.max #agent-panel {
         width: 95vw;
@@ -394,9 +346,8 @@
 }
 
 /* ════════════════════════════════════════════
-   STYLES FAQ — popup interne au chatbot
+   FAQ INTERNE
    ════════════════════════════════════════════ */
-
 .faq-box {
     position: absolute;
     bottom: 80px;
@@ -427,7 +378,6 @@
 .faq-content {
     color: #e5e7eb;
     font-size: 0.95rem;
-    line-height: 1.35rem;
     margin-bottom: 10px;
 }
 
@@ -435,8 +385,8 @@
     color: #4ade80;
     cursor: pointer;
     font-size: 1rem;
-    display: inline-block;
     margin-bottom: 6px;
+    display: inline-block;
 }
 
 .faq-nav {
@@ -469,30 +419,13 @@
     background: #dc2626;
 }
 
-/* Bouton FAQ dans le toolbar du chatbot */
 #faq-open {
     background: #374151 !important;
     color: #fff !important;
     border-radius: 6px !important;
 }
 
-#faq-open:hover {
-    background: #4b5563 !important;
-}
-
-#agent-widget {
-    z-index: 15000 !important;
-}
-
-#agent-panel {
-    z-index: 16000 !important;
-}
-
-.faq-box {
-    z-index: 20000 !important;
-}
-
-
+/* Carousel accueil */
 .capabilities-carousel {
     margin-top: 10px;
     overflow: hidden;
@@ -538,17 +471,36 @@
     }
 }
 
-/* FIX Edge : empêche la découpe des boutons du chatbot */
+/* ════════════════════════════════════════════
+   FIX EDGE (VERSION FINALE SANS DOUBLON)
+   ════════════════════════════════════════════ */
+
+/* Empêche Edge de couper le panel */
 #agent-panel {
     overflow: visible !important;
 }
 
-#agent-toolbar {
-    position: relative;
+/* Bande inférieure non compressée dans Edge */
+#agent-toolbar,
+#agent-form {
+    min-width: 100% !important;
+    flex-shrink: 0 !important;
+    display: flex !important;
+    position: relative !important;
     z-index: 99999 !important;
 }
 
-#agent-form {
-    position: relative;
-    z-index: 99999 !important;
+/* Boutons toujours cliquables dans Edge */
+#agent-toolbar button,
+#faq-open,
+#agent-clear {
+    position: relative !important;
+    z-index: 100000 !important;
+    display: inline-flex !important;
+}
+
+/* Bouton envoyer non coupé */
+#agent-form button[type="submit"] {
+    position: relative !important;
+    z-index: 100000 !important;
 }
