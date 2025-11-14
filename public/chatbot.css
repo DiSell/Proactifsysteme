@@ -406,10 +406,8 @@
     border: 1px solid #374151;
     border-radius: 12px;
     padding: 16px;
-    z-index: 9999;
-
+    z-index: 20000 !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.45);
-
     display: none;
     animation: faqFadeIn 0.2s ease-out;
 }
@@ -481,6 +479,19 @@
 #faq-open:hover {
     background: #4b5563 !important;
 }
+
+#agent-widget {
+    z-index: 15000 !important;
+}
+
+#agent-panel {
+    z-index: 16000 !important;
+}
+
+.faq-box {
+    z-index: 20000 !important;
+}
+
 
 .capabilities-carousel {
     margin-top: 10px;
