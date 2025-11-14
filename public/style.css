@@ -155,11 +155,6 @@ textarea {
     padding: 12px;
 }
 
-.status {
-    min-height: 20px;
-    color: var(--muted);
-}
-
 /* ============ Pied de page ============ */
 .footer {
     text-align: center;
