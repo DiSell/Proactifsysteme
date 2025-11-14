@@ -215,8 +215,6 @@ textarea {
     z-index: 10000;
 }
 
-
-
 .agent.open .agent-panel {
     display: flex;
 }
@@ -847,4 +845,48 @@ h2::after {
 /* 🌟 Espacement spécifique entre Contact et le bouton FAQ */
 .links a:last-child {
     margin-right: 12px;
+}
+
+/* =========================================================
+   🩹 FIX GLOBAL SCROLL PAGE + CHATBOT (Chrome + Mobile)
+   ========================================================= */
+
+/* 1 — Autoriser le scroll sur toute la page */
+html,
+body {
+    height: auto !important;
+    overflow-y: auto !important;
+}
+
+/* 2 — Empêcher Chrome de couper le chatbot */
+.agent-panel {
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    max-height: 78vh !important;
+    /* garde la place pour la barre du bas */
+}
+
+/* 3 — Scroll interne propre des messages */
+.agent-log {
+    overflow-y: auto !important;
+    overflow-x: hidden;
+    max-height: calc(100% - 120px) !important;
+    padding-bottom: 20px;
+    /* évite le texte coupé en bas */
+}
+
+/* 4 — Fix mobile : scroll fluide + correction iPhone */
+@media (max-width: 768px) {
+    .agent-panel {
+        max-height: 82vh !important;
+        height: auto !important;
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* 5 — Fix Chrome qui compresse les flexbox */
+.agent-panel,
+.agent-log,
+.agent-form {
+    flex-shrink: 0 !important;
 }
