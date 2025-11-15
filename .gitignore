@@ -1,40 +1,71 @@
-# Ignorer les modules Node.js
+# ─────────────────────────────
+# Node.js
+# ─────────────────────────────
 node_modules/
 
-# Ignorer les fichiers de configuration locaux
+# ─────────────────────────────
+# Env & Secrets
+# ─────────────────────────────
 .env
 .env.local
 .env.*.local
+.env.production
+.env.dev
 
-# Ignorer les fichiers de log
+# ─────────────────────────────
+# Logs
+# ─────────────────────────────
 logs/
 *.log
 
-# Ignorer les fichiers de build
+# ─────────────────────────────
+# Builds
+# ─────────────────────────────
 dist/
 build/
 
-# Ignorer les fichiers temporaires
+# ─────────────────────────────
+# Temp files
+# ─────────────────────────────
 *.tmp
 *.swp
 *.swo
+*.bak
+*.old
+*.backup
 
-# Ignorer les fichiers de serveur ou de configuration sensibles
-/config/
-secrets/
+# ─────────────────────────────
+# Internal DB files (local only)
+# ─────────────────────────────
+db/
+db.json
+leads.json
+conversations.json
+convos.json
 
-# Ignorer les fichiers de dépendances spécifiques à l’IDE
+# ─────────────────────────────
+# IDE folders
+# ─────────────────────────────
 .vscode/
 .idea/
 *.sublime-project
 *.sublime-workspace
 
-# Ignorer les fichiers spécifiques au système
+# ─────────────────────────────
+# System files
+# ─────────────────────────────
 .DS_Store
 Thumbs.db
 
-# Ignorer les fichiers de base de données locaux (tous les JSON)
-db/
-db.json
-leads.json
-conversations.json
+# ─────────────────────────────
+# Config / sensitive
+# ─────────────────────────────
+/config/
+secrets/
+
+# ─────────────────────────────
+# Cache / deploy artifacts
+# ─────────────────────────────
+.cache/
+*.zip
+*.tar.gz

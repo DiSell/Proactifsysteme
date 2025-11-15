@@ -20,7 +20,6 @@ const axios = require('axios');
 const OpenAI = require('openai');
 const { encrypt, decrypt } = require('./encryption');
 const { sendAlertEmail, showMaintenanceAlert } = require('./alerte');
-const RECAPTCHA_SECRET_KEY = process.env.RECAPTCHA_SECRET_KEY;
 
 /* ────────────────────────────────────────────────────────────
    Logger
