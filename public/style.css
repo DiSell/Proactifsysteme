@@ -380,3 +380,19 @@ h2 {
         min-width: 130px;
     }
 }
+
+/* Écrans horizontaux très bas (téléphones landscape) */
+@media (max-height: 480px) {
+    .agent-panel {
+        width: 96vw !important;
+        height: 85vh !important;
+        left: 2vw !important;
+        right: 2vw !important;
+        bottom: 10px !important;
+        border-radius: 10px !important;
+    }
+
+    .agent-log {
+        max-height: calc(85vh - 130px) !important;
+    }
+}
