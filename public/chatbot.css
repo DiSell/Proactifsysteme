@@ -15,19 +15,72 @@
 #agent-widget .bubble {
     background: #2563eb;
     color: #fff;
-    padding: 10px 16px;
-    border-radius: 20px;
-    max-width: 280px;
-    font-size: 0.9rem;
-    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+    padding: 12px 20px;
+    border-radius: 14px;
+
+    max-width: 300px;
+    min-width: 240px;
+
+    font-size: 0.95rem;
+    text-align: center;
+
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.34);
+
     position: absolute;
-    bottom: 0;
-    right: 70px;
-    z-index: 10050;
+    bottom: 17px;
+    right: 178px;
+
     display: none;
-    animation: bubble-slide-in 0.35s cubic-bezier(0.25, 1, 0.5, 1) forwards,
-        bubble-float 2.4s ease-in-out 0.5s infinite;
+
+    animation: bubble-pop 0.35s ease-out forwards,
+        bubble-wiggle 2s ease-in-out 0.5s infinite;
 }
+
+/* Pop d'apparition */
+@keyframes bubble-pop {
+    0% {
+        transform: scale(0.6) rotate(-4deg);
+        opacity: 0;
+    }
+
+    60% {
+        transform: scale(1.05) rotate(2deg);
+        opacity: 1;
+    }
+
+    100% {
+        transform: scale(1) rotate(0deg);
+    }
+}
+
+/* Secousse légère / wiggle vivant */
+@keyframes bubble-wiggle {
+
+    0%,
+    100% {
+        transform: translateY(0) rotate(0deg);
+    }
+
+    25% {
+        transform: translateY(-2px) rotate(-1.5deg);
+    }
+
+    50% {
+        transform: translateY(1px) rotate(1.5deg);
+    }
+
+    75% {
+        transform: translateY(-1px) rotate(-0.8deg);
+    }
+}
+
+
+
+#agent-widget .bubble::after {
+    border-left: 10px solid #2563eb;
+    /* flèche plus horizontale */
+}
+
 
 #agent-widget:not(.open) .bubble {
     display: block;
@@ -105,16 +158,26 @@
     position: fixed;
     right: 24px;
     bottom: 24px;
-    width: 56px;
-    height: 56px;
+    width: 72px;
+    /* ← plus grand */
+    height: 72px;
+    /* ← plus grand */
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    font-size: 24px;
+    font-size: 32px;
+    /* ← icône plus grande */
     background: #3a86ff;
     color: #fff;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    box-shadow: 0 12px 35px rgba(0, 0, 0, .35);
+    transition: transform .25s ease;
 }
+
+#agent-toggle:hover {
+    transform: scale(1.08);
+    /* petit zoom élégant */
+}
+
 
 
 /* ═══════════════════════════════════════════════════════
@@ -525,4 +588,102 @@
     max-height: calc(100vh - 180px);
     overflow-y: auto;
     overflow-x: auto;
+}
+
+@media (max-width: 480px) {
+    #agent-toggle {
+        width: 64px;
+        height: 64px;
+        font-size: 28px;
+        right: 18px;
+        bottom: 18px;
+    }
+
+    #agent-panel {
+        right: 8px;
+        left: 8px;
+        width: auto;
+    }
+}
+
+/* Carousel — version mobile */
+@media (max-width: 480px) {
+    .capabilities-carousel {
+        height: 32px;
+        margin-top: 6px;
+    }
+
+    .carousel-item {
+        font-size: 0.78rem;
+        padding-left: 4px;
+    }
+
+    .carousel-track {
+        animation-duration: 14s;
+        /* un peu plus rapide */
+    }
+}
+
+@media (max-width: 360px) {
+    .carousel-item {
+        font-size: 0.72rem;
+    }
+}
+
+/* =========================================================
+   CHATBOT — Responsive Mobile (fix complet)
+========================================================= */
+@media (max-width: 600px) {
+
+    /* Panneau principal */
+    .agent-panel {
+        width: 92vw !important;
+        left: 4vw !important;
+        right: 4vw !important;
+        bottom: 90px !important;
+        max-height: 78vh !important;
+        border-radius: 16px !important;
+    }
+
+    /* Zone messages : occupe bien l’espace */
+    .agent-log {
+        max-height: calc(78vh - 120px) !important;
+        padding-bottom: 24px;
+    }
+
+    /* Bouton */
+    #agent-toggle {
+        width: 64px;
+        height: 64px;
+        font-size: 28px;
+        right: 12px;
+        bottom: 12px;
+    }
+}
+
+/* === FIX RESPONSIVE (600px) === */
+@media (max-width: 600px) {}
+
+/* === PLEIN ÉCRAN PETITS TÉLÉPHONES (480px) === */
+@media (max-width: 480px) {
+    .agent-panel {
+        width: 100vw !important;
+        height: 88vh !important;
+        left: 0 !important;
+        right: 0 !important;
+        bottom: 0 !important;
+        border-radius: 0 !important;
+    }
+
+    .agent-log {
+        max-height: calc(88vh - 130px) !important;
+    }
+
+    #agent-toggle {
+        width: 60px;
+        height: 60px;
+        font-size: 26px;
+        bottom: 16px;
+        right: 16px;
+    }
 }

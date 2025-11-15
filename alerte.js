@@ -4,38 +4,44 @@ const nodemailer = require('nodemailer');
 // CONFIGURATION SMTP
 // ════════════════════════════════════════════════════════
 const transporter = nodemailer.createTransport({
-    service: 'gmail', // tu peux remplacer par "ionos", "hotmail", etc.
-    auth: {
-        user: process.env.ALERT_EMAIL_USER,
-        pass: process.env.ALERT_EMAIL_PASS
-    }
+  host: process.env.SMTP_HOST,      // ex: "smtp.ionos.fr"
+  port: Number(process.env.SMTP_PORT) || 465,
+  secure: true,                     // OBLIGATOIRE pour IONOS
+  auth: {
+    user: process.env.IONOS_EMAIL,
+    pass: process.env.IONOS_PASS
+  },
+  tls: {
+    rejectUnauthorized: false     // évite les erreurs SSL IONOS
+  }
 });
+
 
 // ════════════════════════════════════════════════════════
 // 📧 Envoi d’un email d’alerte administrateur
 // ════════════════════════════════════════════════════════
 function sendAlertEmail(subject, text) {
-    const mailOptions = {
-        from: process.env.ALERT_EMAIL_USER,
-        to: process.env.ADMIN_EMAIL,
-        subject,
-        text
-    };
+  const mailOptions = {
+    from: process.env.ALERT_EMAIL_USER,
+    to: process.env.ADMIN_EMAIL,
+    subject,
+    text
+  };
 
-    return transporter.sendMail(mailOptions)
-        .then(info => {
-            console.log('📨 Alerte email envoyée :', info.response);
-        })
-        .catch(err => {
-            console.error('❌ Erreur envoi alerte email :', err.message);
-        });
+  return transporter.sendMail(mailOptions)
+    .then(info => {
+      console.log('📨 Alerte email envoyée :', info.response);
+    })
+    .catch(err => {
+      console.error('❌ Erreur envoi alerte email :', err.message);
+    });
 }
 
 // ════════════════════════════════════════════════════════
 // 🚨 Page de maintenance (utilisateur)
 // ════════════════════════════════════════════════════════
 function showMaintenanceAlert(req, res) {
-    res.status(503).send(`
+  res.status(503).send(`
     <html lang="fr">
       <head>
         <meta charset="UTF-8">

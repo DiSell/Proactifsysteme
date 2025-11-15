@@ -37,6 +37,7 @@ const app = express();
 app.set('trust proxy', 1);
 app.use(compression());
 app.use(express.json({ limit: '10kb' }));
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 app.get('/favicon.ico', (req, res) => res.status(204).end());
@@ -90,7 +91,13 @@ app.use(cors({
     const allowed = [
       "https://proactifsystem.com",
       "https://www.proactifsystem.com",
-      "https://proactifsysteme.onrender.com"
+      "https://proactifsysteme.onrender.com",
+      "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:3001",
+      "http://127.0.0.1:3002"
     ];
 
     if (!origin) return cb(null, true); // OK pour tests / server-to-server
@@ -366,6 +373,8 @@ app.post('/api/perplexity', perplexityLimiter, async (req, res) => {
 ──────────────────────────────────────────────────────────── */
 app.post('/api/lead', leadLimiter, async (req, res) => {
   try {
+    console.log("BODY REÇU :", req.body);
+
     // Récupération des données envoyées par le frontend
     const {
       name = '',
