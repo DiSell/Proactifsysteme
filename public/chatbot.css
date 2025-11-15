@@ -512,3 +512,17 @@
     position: relative !important;
     z-index: 100000 !important;
 }
+
+#agent-log {
+    overflow-y: auto;
+    overflow-x: auto;
+    max-width: 100%;
+    word-wrap: break-word;
+    white-space: normal;
+}
+
+#agent-panel.max #agent-log {
+    max-height: calc(100vh - 180px);
+    overflow-y: auto;
+    overflow-x: auto;
+}
