@@ -47,7 +47,7 @@ body {
 }
 
 .brand {
-    font-size: 2.6rem;
+    font-size: 3.2rem;
     font-weight: 900;
     color: white;
     text-shadow: 0 0 6px #00f0ff, 0 0 12px #6d5dfc, 0 0 18px #ff00cc;
@@ -264,16 +264,25 @@ h2 {
     position: fixed;
     right: 24px;
     bottom: 12px;
-    width: 56px;
-    height: 56px;
+    width: 80px;
+    height: 80px;
     background: #3a86ff;
     color: #fff;
     border-radius: 50%;
     border: none;
     cursor: pointer;
-    font-size: 24px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, .35);
+    font-size: 32px;
+    box-shadow: 0 0 20px rgba(0, 150, 255, 0.6);
 }
+
+@media (max-width: 480px) {
+    #agent-toggle {
+        width: 62px;
+        height: 62px;
+        font-size: 28px;
+    }
+}
+
 
 .agent-panel {
     position: fixed;
@@ -361,7 +370,7 @@ h2 {
 ========================================================= */
 @media (max-width: 480px) {
     .brand {
-        font-size: 1.6rem;
+        font-size: 2.3rem;
     }
 
     .links a,
