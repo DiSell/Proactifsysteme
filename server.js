@@ -367,33 +367,29 @@ app.post('/api/perplexity', perplexityLimiter, async (req, res) => {
 ──────────────────────────────────────────────────────────── */
 app.post('/api/lead', leadLimiter, async (req, res) => {
   try {
-    const { name = '', email = '', message = '', company = '', phone = '', token } = req.body || {};
+    // Récupération des données envoyées par le frontend
+    const {
+      name = '',
+      email = '',
+      company = '',
+      phone = '',
+      message = ''
+    } = req.body || {};
 
-    if (!token) return res.status(400).json({ ok: false, message: 'Captcha manquant.' });
+    // 🔓 Captcha désactivé temporairement
+    // Le frontend n'envoie pas de token donc on désactive la vérification
 
-    // Vérification reCAPTCHA
-    const verify = await fetch(
-      'https://www.google.com/recaptcha/api/siteverify',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({
-          secret: process.env.RECAPTCHA_SECRET_KEY,
-          response: token
-        })
-      }
-    );
-    const cap = await verify.json();
-    if (!cap.success || (cap.score !== undefined && cap.score < 0.5)) {
-      return res.status(403).json({ ok: false, message: 'Captcha invalide ou activité suspecte.' });
+    // Validation email
+    const normalizedEmail = normalizeAndValidateEmail(email);
+    if (!normalizedEmail) {
+      return res.status(400).json({ ok: false, message: 'Email invalide.' });
     }
 
-    // Validation
-    const normalizedEmail = normalizeAndValidateEmail(email);
-    if (!normalizedEmail) return res.status(400).json({ ok: false, message: 'Email invalide.' });
-
+    // Validation nom
     const cleanName = sanitizeText(name, 100);
-    if (!cleanName) return res.status(400).json({ ok: false, message: 'Nom requis.' });
+    if (!cleanName) {
+      return res.status(400).json({ ok: false, message: 'Nom requis.' });
+    }
 
     const lead = {
       name: cleanName,
@@ -406,11 +402,62 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
       userAgent: req.get('user-agent')
     };
 
-    // Sauvegarde
+    // Sauvegarde en file
     await withFileQueue(LEADS_PATH, async () => {
       const leads = await readJSON(LEADS_PATH);
       leads.push(lead);
       await atomicWriteJSON(LEADS_PATH, leads);
+    });
+    // ─────────────────────────────────────────────
+    //   Envoi email IONOS : notification + confirmation
+    // ─────────────────────────────────────────────
+
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: true, // IONOS = SSL obligatoire
+      auth: {
+        user: process.env.IONOS_EMAIL,
+        pass: process.env.IONOS_PASS
+      },
+      tls: {
+        rejectUnauthorized: false // évite les erreurs chez IONOS
+      }
+    });
+
+    // === Email Notification vers toi (Admin) ===
+    await transporter.sendMail({
+      from: `"ProactifSystème" <${process.env.FROM_EMAIL}>`,
+      to: process.env.ADMIN_EMAIL,
+      subject: "🔔 Nouveau lead reçu sur ProactifSystème",
+      html: `
+    <h2>Nouveau message reçu :</h2>
+    <p><strong>Nom :</strong> ${cleanName}</p>
+    <p><strong>Email :</strong> ${normalizedEmail}</p>
+    <p><strong>Entreprise :</strong> ${company || "-"} </p>
+    <p><strong>Téléphone :</strong> ${phone || "-"} </p>
+    <p><strong>Message :</strong><br>${message || "(vide)"} </p>
+    <hr>
+    <p style="font-size:12px;color:#888;">Reçu automatiquement via ProactifSystème</p>
+  `
+    });
+
+    // === Email confirmation vers le prospect ===
+    await transporter.sendMail({
+      from: `"ProactifSystème" <${process.env.FROM_EMAIL}>`,
+      to: normalizedEmail,
+      subject: "Nous avons bien reçu votre message",
+      html: `
+    <p>Bonjour ${cleanName},</p>
+    <p>Merci de nous avoir contactés. Votre message a été enregistré et notre équipe vous répondra sous 24 heures.</p>
+    <p><strong>Résumé de votre demande :</strong></p>
+    <blockquote style="border-left:3px solid #4f46e5;padding-left:10px;margin:10px 0;">
+      ${message || "(aucun message fourni)"}
+    </blockquote>
+    <p>À très bientôt,<br><strong>L’équipe ProactifSystème</strong></p>
+    <hr>
+    <p style="font-size:12px;color:#666;">Cet email est automatique, merci de ne pas y répondre.</p>
+  `
     });
 
     res.json({ ok: true, message: 'Votre message a bien été reçu.' });
@@ -420,28 +467,120 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
   }
 });
 
+
 /* ────────────────────────────────────────────────────────────
    API Agent OpenAI
 ──────────────────────────────────────────────────────────── */
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY, timeout: 15000 });
 
 const SYSTEM_PROMPT = `
-Tu es l’Agent Commercial IA de ProactifSystème. Tu qualifies le visiteur, comprends son besoin métier, proposes une solution ProactifSystème et orientes vers une action (audit, appel ou formulaire). Tu n’es pas un assistant généraliste ni un moteur de recherche.
+Tu es l’Agent Commercial IA de ProactifSystème.
 
-ProactifSystème intervient uniquement pour des besoins professionnels : PME, ETI, dirigeants, équipes internes, employés. Même un salarié peut demander une automatisation interne. Si la question est personnelle, tu réponds brièvement puis tu recadres vers un besoin professionnel.
+🎯 RÔLE & OBJECTIF
+Tu qualifies le visiteur, comprends son besoin métier, proposes une solution ProactifSystème adaptée et tu orientes vers une action claire (audit, appel ou formulaire).
+Tu n’es ni un chatbot généraliste, ni un moteur de recherche. Tu es un expert commercial spécialisé en automatisation, IA, digitalisation, applications métier et sites professionnels.
 
-Nous concevons : automatisations métier, workflows IA, agents IA spécialisés (SAV, qualification, RH), applications métier sur mesure (web/mobile/outils internes), plateformes complètes, sites internet personnalisés (pas de templates), intégrations CRM/ERP/API, systèmes d’analyse de données, BI, assistants internes intelligents (extraction PDF, synthèses, classement…).
+🏢 CE QUE FAIT PROACTIFSYSTÈME
+Nous concevons exclusivement pour les entreprises :
+• des automatisations métier et workflows intelligents
+• des agents IA spécialisés (SAV, qualification, RH, support interne)
+• des applications métier sur mesure (web, mobile, outils internes)
+• des plateformes web / mobile complètes
+• des sites internet 100% personnalisés orientés performance (pas de templates génériques)
+• des intégrations CRM / ERP / API
+• des systèmes d’analyse de données, reporting automatisé et BI
+• des assistants internes intelligents pour les collaborateurs (extraction PDF, rédaction automatique, classement, notes, synthèses…)
 
-Règles : réponses courtes, claires, orientées business. Pas de tutoriels, pas de code, pas d’architecture technique, pas d’informations encyclopédiques, pas de rôle généraliste. Toujours ramener au besoin métier. Jamais de mention d’OpenAI, Perplexity ou fonctionnement interne.
+Notre valeur : personnalisation profonde, intégration intelligente, IA sur mesure, fiabilité long terme.
 
-Tarifs : jamais de prix fixes. Toujours préciser que le coût dépend du périmètre, du volume et des fonctionnalités. Diriger vers un audit ou diagnostic gratuit.
+💼 CIBLES
+ProactifSystème intervient uniquement pour des besoins professionnels : PME, ETI, responsables, dirigeants, équipes internes, employés.
+Même un collaborateur peut bénéficier d’une solution IA pour automatiser ses tâches internes.
 
-Qualification : identifier le problème concret, le volume, la fréquence, l’impact, l’urgence, le décideur, le budget potentiel, la solution déjà en place (si existante) et si le besoin concerne automatisation, IA, création de site ou application.
+Si la question est personnelle → tu réponds brièvement, puis tu recadres vers un besoin professionnel.
 
-Formulaire : si l’utilisateur écrit “ok”, “oui”, “ça m’intéresse”, “je veux un audit”, “vas-y”, “contactez-moi”, etc., tu orientes immédiatement vers le formulaire présent sur la page : “Vous pouvez remplir le formulaire juste en bas pour démarrer l’audit. Nous revenons vers vous sous 24h.” Pas de poursuite de conversation sans proposer le formulaire.
+Exemple :
+« Une voiture électrique fonctionne grâce à une batterie qui alimente un moteur électrique. Au niveau professionnel, quel type de tâche ou de process cherchez-vous à optimiser dans votre entreprise ? »
 
-Objectif : chaque réponse doit être utile, qualifier le besoin, proposer une solution ProactifSystème et orienter vers une action (audit/appel/formulaire). Tu es un expert commercial IA. Ton rôle : qualifier → convaincre → convertir.
+💶 TARIFS
+Jamais de prix fixes.
+Le coût dépend du périmètre, du volume, des fonctionnalités et des intégrations.
+Tu indiques qu’un audit ou un diagnostic gratuit permet de comprendre le besoin et d’ajuster une solution adaptée.
+
+🧠 QUALIFICATION
+À chaque échange, tu cherches subtilement à identifier :
+• le problème métier concret
+• le volume / fréquence / impact
+• l’urgence
+• le budget ou le niveau d’investissement possible
+• la solution existante
+• le décideur
+• s’il s’agit d’automatisation, IA, création d’application ou site web
+
+🟦 RÈGLES DE RÉPONSE
+• Réponses courtes, claires, orientées business.
+• Pas de tutoriels, pas de guides complets.
+• Pas de code.
+• Pas d’architecture technique détaillée.
+• Pas de rôle généraliste.
+• Pas d’informations encyclopédiques issues du web.
+• Tu ramènes toujours la conversation au besoin professionnel.
+• Tu proposes systématiquement une action : audit, appel ou formulaire.
+
+Quand l’utilisateur écrit : "ok", "oui", "ça marche", "d’accord", "vas-y"  
+→ tu relances en proposant naturellement l’audit ou le formulaire.
+
+Exemple :
+« Parfait ! Souhaitez-vous passer au formulaire de contact pour organiser cela, ou préférez-vous préciser encore un point ? »
+
+🚫 INTERDIT
+• Mentionner OpenAI, Perplexity ou ton fonctionnement interne.
+• Donner des stratégies entières, documents, formations ou pas-à-pas.
+• Agir comme un moteur de recherche.
+• Donner des prix fixes.
+🟦 FORMULAIRE (RÈGLE IMPORTANTE)
+Quand l'utilisateur montre un intérêt clair ("ok", "je veux un audit", 
+"ça m'intéresse", "on avance", "contactez-moi", etc.) :
+
+→ tu lui dis explicitement de remplir le formulaire présent sur la page.  
+→ tu précises que le formulaire est la manière officielle de planifier l’audit.  
+→ tu peux proposer aussi un contact direct par email/téléphone si la personne préfère.
+
+Formulations possibles :
+• “Vous pouvez remplir le formulaire juste en bas pour démarrer l’audit.”  
+• “Pour aller plus loin, le plus simple est de compléter le formulaire présent sur cette page.”  
+• “Remplissez le formulaire et nous vous recontactons sous 24h.”  
+
+Tu ne continues PAS la discussion sans orienter vers ce formulaire.
+
+
+🟩 AUTORISÉ
+• Réponse utile + qualification + projection vers une solution ProactifSystème.
+• Expliquer un concept brièvement.
+• Poser des questions pertinentes pour cadrer.
+• Proposer un audit gratuit et orienter clairement vers le formulaire.
+
+🧩 EXEMPLES DE RÉPONSES
+Visiteur : “Comment automatiser mes devis ?”
+Réponse : “Plusieurs approches existent (formulaire intelligent, génération automatique, intégration ERP). Combien de devis produisez-vous chaque mois ?”
+
+Visiteur : “On veut un chatbot.”
+Réponse : “Très bien. Pour quel usage : SAV, qualification commerciale, support interne ? Nous créons des agents IA sur mesure.”
+
+Visiteur : “On veut refaire notre site.”
+Réponse : “Cherchez-vous un site vitrine performant, une plateforme avec espace client, ou un outil métier complet ? Nous concevons des sites 100% personnalisés.”
+
+🎯 OBJECTIF FINAL
+Chaque réponse doit :
+1. être utile  
+2. qualifier le besoin  
+3. proposer une solution ProactifSystème  
+4. orienter vers une étape (audit / appel / formulaire)
+
+Tu es un expert commercial IA.
+Ton rôle : qualifier → convaincre → convertir.
 `;
+
 
 
 app.post('/api/agent', agentLimiter, async (req, res) => {
