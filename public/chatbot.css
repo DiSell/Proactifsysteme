@@ -332,6 +332,30 @@
     }
 }
 
+
+/* ═══════════════════════════════════════════════════════
+   ÉTATS : AGRANDI (.max) — RÉDUIT (.min)
+   ═══════════════════════════════════════════════════════ */
+
+#agent-widget.max #agent-panel {
+    width: 90vw !important;
+    height: 85vh !important;
+    left: 5vw !important;
+    right: 5vw !important;
+    bottom: 5vh !important;
+    border-radius: 20px !important;
+    max-height: none !important;
+}
+
+#agent-widget.min #agent-panel {
+    width: 360px !important;
+    height: 500px !important;
+    right: 20px !important;
+    bottom: 90px !important;
+    border-radius: 16px !important;
+    overflow: hidden !important;
+}
+
 /* ═══════════════════════════════════════════════════════
    RESPONSIVE (600px)
    ═══════════════════════════════════════════════════════ */
