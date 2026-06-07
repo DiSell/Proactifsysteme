@@ -84,32 +84,42 @@ app.use((req, res, next) => {
 
 /* ────────────────────────────────────────────────────────────
    CORS
+   - Routes embed (/api/agent, /api/perplexity) : tout domaine
+     accepté (widget embarqué chez les clients), sans credentials.
+   - Autres routes : whitelist stricte avec credentials.
 ──────────────────────────────────────────────────────────── */
-/* ────────────────────────────────────────────────────────────
-   CORS (ACCEPTER WWW ET NON-WWW)
-──────────────────────────────────────────────────────────── */
+const EMBED_ROUTES = ['/api/agent', '/api/perplexity'];
+
+app.use((req, res, next) => {
+  if (EMBED_ROUTES.includes(req.path)) {
+    // Routes publiques (embed) — pas de credentials, tout domaine
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type,X-Session-Id');
+    if (req.method === 'OPTIONS') return res.sendStatus(204);
+    return next();
+  }
+  next();
+});
+
+const ALLOWED_ORIGINS = [
+  "https://proactifsystem.com",
+  "https://www.proactifsystem.com",
+  "https://proactifsysteme.onrender.com",
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://127.0.0.1:3000",
+  "http://127.0.0.1:3001",
+  "http://127.0.0.1:3002"
+];
+
 app.use(cors({
   origin: (origin, cb) => {
-    const allowed = [
-      "https://proactifsystem.com",
-      "https://www.proactifsystem.com",
-      "https://proactifsysteme.onrender.com",
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3002",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:3001",
-      "http://127.0.0.1:3002"
-    ];
-
-    if (!origin) return cb(null, true); // OK pour tests / server-to-server
-
-    if (allowed.includes(origin)) {
-      cb(null, true);
-    } else {
-      logger.warn('CORS blocked', { origin });
-      cb(new Error('CORS policy: origin not allowed'));
-    }
+    if (!origin) return cb(null, true);
+    if (ALLOWED_ORIGINS.includes(origin)) return cb(null, true);
+    logger.warn('CORS blocked', { origin });
+    cb(new Error('CORS policy: origin not allowed'));
   },
   credentials: true
 }));
@@ -120,17 +130,20 @@ app.use(cors({
    Sessions
 ──────────────────────────────────────────────────────────── */
 function getSessionId(req, res) {
-  let sid = req.cookies?.sessionId;
+  // Priorité : cookie (site principal) → header X-Session-Id (embed externe)
+  let sid = req.cookies?.sessionId || req.headers['x-session-id'];
 
   if (!sid) {
     sid = uuidv4();
-    res.cookie('sessionId', sid, {
-      httpOnly: true,
-      secure: true,          // obligatoire pour iPhone
-      sameSite: 'none',
-      domain: '.proactifsystem.com',     // obligatoire pour iPhone
-      maxAge: 1000 * 60 * 60 * 24 * 7,
-    });
+    try {
+      res.cookie('sessionId', sid, {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        domain: '.proactifsystem.com',
+        maxAge: 1000 * 60 * 60 * 24 * 7,
+      });
+    } catch {}
     logger.info('New session created', { sessionId: sid });
   }
   return sid;
