@@ -53,6 +53,18 @@ Point d'entrée unique qui orchestre tout :
 | `POST /api/history/clear` | — | Efface l'historique serveur |
 | `GET /api/config` | — | Retourne la clé reCAPTCHA publique |
 | `GET /health` | — | Santé du serveur |
+| `POST /api/process` | 15 req/min par IP | Upload texte + images → parse IA → JSON structuré |
+| `GET /api/process` | 15 req/min par IP | Liste les processus de la session |
+| `GET /api/process/:id` | 15 req/min par IP | Détail complet d'un processus |
+| `POST /api/process/:id/explain` | 15 req/min par IP | Explication IA d'une étape ou schéma |
+| `DELETE /api/process/:id` | 15 req/min par IP | Supprime un processus (session propriétaire) |
+
+### Module `processes.js`
+- `parseWithAI(text, openai)` — parse via OpenAI avec `response_format: json_object`
+- `parseWithRegex(text)` — fallback si OpenAI échoue (regex étapes/schémas/bullets)
+- Images uploadées via multer dans `public/uploads/`, associées aux étapes par ordre d'index
+- Stockage chiffré dans `db/processes.json` via `writeProcesses` / `readProcesses`
+- Accès en lecture par UUID (pas de restriction session) — suppression réservée à la session propriétaire
 
 ## Variables d'environnement requises
 

@@ -20,6 +20,8 @@ const axios = require('axios');
 const OpenAI = require('openai');
 const { encrypt, decrypt } = require('./encryption');
 const { sendAlertEmail, showMaintenanceAlert, transporter } = require('./alerte');
+const multer = require('multer');
+const { readProcesses, writeProcesses, parseWithAI, parseWithRegex, PROCESSES_PATH, UPLOADS_DIR, ensureUploadsDir } = require('./processes');
 
 /* ────────────────────────────────────────────────────────────
    Logger
@@ -212,6 +214,8 @@ const CONVOS_PATH = path.join(DB_DIR, 'conversations.json');
 const LEADS_PATH = path.join(DB_DIR, 'leads.json');
 
 if (!fsSync.existsSync(DB_DIR)) fsSync.mkdirSync(DB_DIR, { recursive: true });
+ensureUploadsDir();
+app.use('/uploads', express.static(UPLOADS_DIR));
 
 const queues = new Map();
 function withFileQueue(file, fn) {
@@ -264,6 +268,7 @@ async function readJSON(filepath) {
 (async () => {
   await ensureFile(CONVOS_PATH, '{}');
   await ensureFile(LEADS_PATH, '[]');
+  await ensureFile(PROCESSES_PATH, '{}');
 
   try {
     const convos = await readJSON(CONVOS_PATH);
@@ -674,6 +679,200 @@ app.get('/api/config', (req, res) => {
     recaptchaSiteKey: process.env.RECAPTCHA_SITE_KEY || '6LeAVAksAAAAAJCJqveZyvOWyJ12B3dhPexH2y5G'
   });
 });
+/* ────────────────────────────────────────────────────────────
+   API Processus — upload, parse, stockage, explication IA
+──────────────────────────────────────────────────────────── */
+const multerStorage = multer.diskStorage({
+  destination: (_req, _file, cb) => cb(null, UPLOADS_DIR),
+  filename: (_req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    cb(null, `${uuidv4()}${ext}`);
+  }
+});
+const upload = multer({
+  storage: multerStorage,
+  limits: { fileSize: 5 * 1024 * 1024 },
+  fileFilter: (_req, file, cb) => {
+    const allowed = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
+    cb(null, allowed.includes(path.extname(file.originalname).toLowerCase()));
+  }
+});
+const processLimiter = rateLimit({
+  windowMs: 60_000,
+  max: 15,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: keyByIp,
+  message: { ok: false, message: 'Trop de requêtes. Attendez 1 minute.' }
+});
+
+function withUpload(req, res, next) {
+  upload.array('images', 20)(req, res, (err) => {
+    if (err instanceof multer.MulterError)
+      return res.status(400).json({ ok: false, message: `Upload invalide : ${err.message}` });
+    if (err)
+      return res.status(400).json({ ok: false, message: 'Fichier refusé (format ou taille).' });
+    next();
+  });
+}
+
+// POST /api/process — créer un processus depuis texte + images
+app.post('/api/process', processLimiter, withUpload, async (req, res) => {
+  try {
+    const raw = String(req.body?.text || '').trim();
+    if (raw.length < 10)
+      return res.status(400).json({ ok: false, message: 'Texte trop court (minimum 10 caractères).' });
+
+    const text = sanitizeText(raw, 10000);
+
+    let parsed;
+    try {
+      parsed = await parseWithAI(text, openai);
+    } catch (aiErr) {
+      logger.warn('Fallback regex parser', { reason: aiErr.message });
+      parsed = parseWithRegex(text);
+    }
+
+    if (!parsed.steps.length)
+      return res.status(422).json({ ok: false, message: 'Aucune étape détectée dans le texte.' });
+
+    // Associe les images par ordre : d'abord aux étapes, puis aux schémas
+    const imageUrls = (req.files || []).map(f => `/uploads/${f.filename}`);
+    parsed.steps.forEach((s, i) => { if (imageUrls[i]) s.imageUrl = imageUrls[i]; });
+    parsed.schemas.forEach((s, i) => {
+      const idx = parsed.steps.length + i;
+      if (imageUrls[idx]) s.imageUrl = imageUrls[idx];
+    });
+
+    const id = uuidv4();
+    const sessionId = getSessionId(req, res);
+    const process = {
+      id,
+      title: sanitizeText(String(req.body?.title || parsed.title || 'Processus'), 200),
+      steps: parsed.steps,
+      schemas: parsed.schemas,
+      images: imageUrls,
+      createdAt: new Date().toISOString(),
+      sessionId
+    };
+
+    await withFileQueue(PROCESSES_PATH, async () => {
+      const all = await readProcesses();
+      all[id] = process;
+      await writeProcesses(all);
+    });
+
+    logger.info('Process created', { id, steps: process.steps.length, schemas: process.schemas.length });
+    res.status(201).json({ ok: true, id, process });
+  } catch (err) {
+    logger.error('Process create error', { error: err.message });
+    res.status(500).json({ ok: false, message: 'Erreur serveur.' });
+  }
+});
+
+// GET /api/process — liste les processus de la session courante
+app.get('/api/process', processLimiter, async (req, res) => {
+  try {
+    const sid = getSessionId(req, res);
+    const all = await readProcesses();
+    const list = Object.values(all)
+      .filter(p => p.sessionId === sid)
+      .map(({ id, title, createdAt, steps, schemas }) => ({
+        id, title, createdAt,
+        stepCount: steps.length,
+        schemaCount: schemas.length
+      }))
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    res.json({ ok: true, processes: list });
+  } catch (err) {
+    logger.error('Process list error', { error: err.message });
+    res.status(500).json({ ok: false, processes: [] });
+  }
+});
+
+// GET /api/process/:id — détail complet (accessible par UUID)
+app.get('/api/process/:id', processLimiter, async (req, res) => {
+  try {
+    const all = await readProcesses();
+    const p = all[req.params.id];
+    if (!p) return res.status(404).json({ ok: false, message: 'Processus introuvable.' });
+    res.json({ ok: true, process: p });
+  } catch (err) {
+    logger.error('Process get error', { error: err.message });
+    res.status(500).json({ ok: false, message: 'Erreur serveur.' });
+  }
+});
+
+// POST /api/process/:id/explain — explication IA d'une étape ou d'un schéma
+// body: { type: 'step'|'schema', index: number, question?: string }
+app.post('/api/process/:id/explain', processLimiter, async (req, res) => {
+  try {
+    const { type, index, question } = req.body || {};
+    if (!['step', 'schema'].includes(type))
+      return res.status(400).json({ ok: false, message: 'type doit être "step" ou "schema".' });
+    if (!Number.isInteger(Number(index)) || Number(index) < 1)
+      return res.status(400).json({ ok: false, message: 'index doit être un entier positif.' });
+
+    const all = await readProcesses();
+    const p = all[req.params.id];
+    if (!p) return res.status(404).json({ ok: false, message: 'Processus introuvable.' });
+
+    const items = type === 'step' ? p.steps : p.schemas;
+    const item = items.find(i => i.index === Number(index));
+    if (!item)
+      return res.status(404).json({ ok: false, message: `${type} n°${index} introuvable.` });
+
+    const q = question ? sanitizeText(String(question), 300) : '';
+    const label = type === 'step' ? 'Étape' : 'Schéma';
+    const contextSteps = p.steps.map(s => `  Étape ${s.index}: ${s.title}`).join('\n');
+
+    const prompt = `Tu es un expert en documentation de processus métier.
+
+Processus : "${p.title}"
+${label} ${item.index} — "${item.title}"
+Description : ${item.description}
+
+Contexte global du processus :
+${contextSteps}
+
+${q ? `Question : ${q}` : `Explique cette ${label.toLowerCase()} de façon claire, précise et utile pour quelqu'un qui doit l'exécuter.`}`;
+
+    const result = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 500,
+      temperature: 0.4
+    });
+
+    const explanation = result.choices[0]?.message?.content?.trim() || 'Explication indisponible.';
+    res.json({ ok: true, type, index: Number(index), item, explanation });
+  } catch (err) {
+    logger.error('Process explain error', { error: err.message });
+    res.status(500).json({ ok: false, message: 'Erreur serveur.' });
+  }
+});
+
+// DELETE /api/process/:id — supprime un processus (session propriétaire uniquement)
+app.delete('/api/process/:id', processLimiter, async (req, res) => {
+  try {
+    const sid = getSessionId(req, res);
+    await withFileQueue(PROCESSES_PATH, async () => {
+      const all = await readProcesses();
+      const p = all[req.params.id];
+      if (!p || p.sessionId !== sid) return;
+      for (const url of (p.images || [])) {
+        try { await fs.unlink(path.join(__dirname, 'public', url)); } catch {}
+      }
+      delete all[req.params.id];
+      await writeProcesses(all);
+    });
+    res.json({ ok: true });
+  } catch (err) {
+    logger.error('Process delete error', { error: err.message });
+    res.status(500).json({ ok: false, message: 'Erreur serveur.' });
+  }
+});
+
 /* ────────────────────────────────────────────────────────────
    Listen
 ──────────────────────────────────────────────────────────── */

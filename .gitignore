@@ -44,6 +44,11 @@ conversations.json
 convos.json
 
 # ─────────────────────────────
+# Fichiers uploadés (local only)
+# ─────────────────────────────
+public/uploads/
+
+# ─────────────────────────────
 # IDE folders
 # ─────────────────────────────
 .vscode/
