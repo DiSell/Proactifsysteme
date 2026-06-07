@@ -35,11 +35,20 @@
       badge.title = engine === 'perplexity' ? 'Réponse basée sur le web' : 'Réponse IA conversationnelle';
       div.appendChild(badge);
     }
-    // Contenu avec support basique markdown
+    // Contenu avec support basique markdown — sans innerHTML pour éviter XSS
     const content = document.createElement('span');
-    content.innerHTML = text
-      .replace(/\n/g, '<br>')
-      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+    text.split('\n').forEach((line, i) => {
+      if (i > 0) content.appendChild(document.createElement('br'));
+      line.split(/\*\*(.*?)\*\*/g).forEach((part, j) => {
+        if (j % 2 === 1) {
+          const strong = document.createElement('strong');
+          strong.textContent = part;
+          content.appendChild(strong);
+        } else {
+          content.appendChild(document.createTextNode(part));
+        }
+      });
+    });
     div.appendChild(content);
     logBox.appendChild(div);
     logBox.scrollTop = logBox.scrollHeight;
@@ -453,6 +462,7 @@
       try {
         const res = await fetch(`${API_BASE}/api/lead`, {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data)
         });

@@ -2,9 +2,14 @@
 const crypto = require('crypto');
 
 const ALGO = 'aes-256-cbc';
+
+if (!process.env.DATA_ENCRYPTION_KEY) {
+    throw new Error('[encryption] DATA_ENCRYPTION_KEY est absent des variables d\'environnement. Définissez-le dans .env avant de démarrer le serveur.');
+}
+
 const SECRET_KEY = crypto
     .createHash('sha256')
-    .update(String(process.env.DATA_ENCRYPTION_KEY || 'ProactifSysteme_Default_Key'))
+    .update(process.env.DATA_ENCRYPTION_KEY)
     .digest('base64')
     .substr(0, 32);
 const IV_LENGTH = 16;

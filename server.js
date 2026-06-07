@@ -19,7 +19,7 @@ const nodemailer = require('nodemailer');
 const axios = require('axios');
 const OpenAI = require('openai');
 const { encrypt, decrypt } = require('./encryption');
-const { sendAlertEmail, showMaintenanceAlert } = require('./alerte');
+const { sendAlertEmail, showMaintenanceAlert, transporter } = require('./alerte');
 
 /* ────────────────────────────────────────────────────────────
    Logger
@@ -373,8 +373,6 @@ app.post('/api/perplexity', perplexityLimiter, async (req, res) => {
 ──────────────────────────────────────────────────────────── */
 app.post('/api/lead', leadLimiter, async (req, res) => {
   try {
-    console.log("BODY REÇU :", req.body);
-
     // Récupération des données envoyées par le frontend
     const {
       name = '',
@@ -420,19 +418,6 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
     //   Envoi email IONOS : notification + confirmation
     // ─────────────────────────────────────────────
 
-    const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST,
-      port: Number(process.env.SMTP_PORT),
-      secure: true, // IONOS = SSL obligatoire
-      auth: {
-        user: process.env.IONOS_EMAIL,
-        pass: process.env.IONOS_PASS
-      },
-      tls: {
-        rejectUnauthorized: false // évite les erreurs chez IONOS
-      }
-    });
-
     // === Email Notification vers toi (Admin) ===
     await transporter.sendMail({
       from: `"ProactifSystème" <${process.env.FROM_EMAIL}>`,
@@ -442,9 +427,9 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
     <h2>Nouveau message reçu :</h2>
     <p><strong>Nom :</strong> ${cleanName}</p>
     <p><strong>Email :</strong> ${normalizedEmail}</p>
-    <p><strong>Entreprise :</strong> ${company || "-"} </p>
-    <p><strong>Téléphone :</strong> ${phone || "-"} </p>
-    <p><strong>Message :</strong><br>${message || "(vide)"} </p>
+    <p><strong>Entreprise :</strong> ${lead.company || "-"} </p>
+    <p><strong>Téléphone :</strong> ${lead.phone || "-"} </p>
+    <p><strong>Message :</strong><br>${lead.message || "(vide)"} </p>
     <hr>
     <p style="font-size:12px;color:#888;">Reçu automatiquement via ProactifSystème</p>
   `
@@ -460,7 +445,7 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
     <p>Merci de nous avoir contactés. Votre message a été enregistré et notre équipe vous répondra sous 24 heures.</p>
     <p><strong>Résumé de votre demande :</strong></p>
     <blockquote style="border-left:3px solid #4f46e5;padding-left:10px;margin:10px 0;">
-      ${message || "(aucun message fourni)"}
+      ${lead.message || "(aucun message fourni)"}
     </blockquote>
     <p>À très bientôt,<br><strong>L’équipe ProactifSystème</strong></p>
     <hr>

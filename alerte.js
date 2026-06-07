@@ -12,7 +12,7 @@ const transporter = nodemailer.createTransport({
     pass: process.env.IONOS_PASS
   },
   tls: {
-    rejectUnauthorized: false     // évite les erreurs SSL IONOS
+    rejectUnauthorized: true
   }
 });
 
@@ -82,4 +82,4 @@ function showMaintenanceAlert(req, res) {
 // ════════════════════════════════════════════════════════
 // EXPORT
 // ════════════════════════════════════════════════════════
-module.exports = { sendAlertEmail, showMaintenanceAlert };
+module.exports = { sendAlertEmail, showMaintenanceAlert, transporter };

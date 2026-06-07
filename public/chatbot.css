@@ -99,36 +99,6 @@
     border-bottom: 6px solid transparent;
 }
 
-/* Animations */
-@keyframes bubble-slide-in {
-    0% {
-        opacity: 0;
-        transform: translateX(-20px) scale(0.95);
-    }
-
-    60% {
-        opacity: 1;
-        transform: translateX(4px) scale(1.03);
-    }
-
-    100% {
-        opacity: 1;
-        transform: translateX(0) scale(1);
-    }
-}
-
-@keyframes bubble-float {
-
-    0%,
-    100% {
-        transform: translateY(0);
-    }
-
-    50% {
-        transform: translateY(-3px);
-    }
-}
-
 /* Responsive bulle */
 @media (max-width: 480px) {
     #agent-widget .bubble {
