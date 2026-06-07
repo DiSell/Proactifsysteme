@@ -578,9 +578,54 @@ OBJECTIF DE CHAQUE RÉPONSE
 4. Rapprocher d’une étape concrète (formulaire / audit)
 
 Tu es un expert commercial. Ton rôle : démontrer → qualifier → convaincre → convertir.
+
+═══════════════════════════════════════════
+BASE DE CONNAISSANCES
+═══════════════════════════════════════════
+Des documents peuvent être injectés en bas de ce prompt (section "BASE DE CONNAISSANCES").
+Si la question du visiteur porte sur un produit, une procédure, une référence ou un service mentionné dans ces documents :
+→ réponds directement et précisément en te basant sur ces informations.
+→ mentionne le document source si pertinent.
+→ si l'information n'y est pas, dis-le clairement et propose de remplir le formulaire pour être recontacté.
 `;
 
 
+
+/* Construit un bloc de contexte à partir des documents uploadés */
+async function buildKnowledgeContext() {
+  try {
+    const processes = await readProcesses();
+    const ids = Object.keys(processes);
+    if (!ids.length) return '';
+
+    const MAX_TOTAL_CHARS = 3500;
+    let block = '\n\n════════════════════════════════════════\n';
+    block += 'BASE DE CONNAISSANCES (documents uploadés)\n';
+    block += '════════════════════════════════════════\n';
+    block += 'Utilise ces informations pour répondre aux questions sur les produits, procédures ou références. Si la réponse est dans la base, réponds directement et précisément.\n\n';
+
+    for (const id of ids) {
+      const p = processes[id];
+      if (!p || !p.title) continue;
+      block += `📄 ${p.title}\n`;
+      for (const s of (p.steps || [])) {
+        const desc = (s.description || '').slice(0, 180);
+        block += `  • ${s.title}${desc ? ': ' + desc : ''}\n`;
+      }
+      for (const s of (p.schemas || [])) {
+        const desc = (s.description || '').slice(0, 180);
+        block += `  [Schéma] ${s.title}${desc ? ': ' + desc : ''}\n`;
+      }
+      block += '\n';
+      if (block.length > MAX_TOTAL_CHARS) break;
+    }
+
+    block += '════════════════════════════════════════';
+    return block;
+  } catch {
+    return '';
+  }
+}
 
 app.post('/api/agent', agentLimiter, async (req, res) => {
   const raw = (req.body?.q || '').trim();
@@ -597,6 +642,9 @@ app.post('/api/agent', agentLimiter, async (req, res) => {
   try {
     let answer = 'Pouvez-vous reformuler ?';
 
+    const knowledgeContext = await buildKnowledgeContext();
+    const systemContent = SYSTEM_PROMPT + knowledgeContext;
+
     await withFileQueue(CONVOS_PATH, async () => {
       const convos = await readJSON(CONVOS_PATH);
       if (!convos[sessionId]) convos[sessionId] = [];
@@ -604,14 +652,14 @@ app.post('/api/agent', agentLimiter, async (req, res) => {
       convos[sessionId].push({ id: uuidv4(), role: 'user', content: question, timestamp: Date.now() });
 
       const recent = convos[sessionId].slice(-20).map(m => ({ role: m.role, content: m.content }));
-      const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...recent];
+      const messages = [{ role: 'system', content: systemContent }, ...recent];
 
       try {
         const result = await openai.chat.completions.create({
           model: 'gpt-4o-mini',
           messages,
-          max_tokens: 350,
-          temperature: 0.8
+          max_tokens: 500,
+          temperature: 0.7
         });
 
         if (result?.choices?.[0]?.message?.content) {
