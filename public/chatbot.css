@@ -6,7 +6,7 @@
     bottom: 16px;
     right: 16px;
     z-index: 10000;
-    font-family: 'Segoe UI', sans-serif;
+    font-family: 'Inter', 'Segoe UI', sans-serif;
 }
 
 /* ═══════════════════════════════════════════════════════
@@ -157,14 +157,15 @@
     display: none;
     flex-direction: column;
     position: fixed;
-    bottom: 90px;
+    bottom: 100px;
     right: 20px;
     width: 360px;
-    height: 500px;
-    max-height: 500px;
-    background: #1e1e1e;
+    height: 520px;
+    max-height: 520px;
+    background: #0e1826;
+    border: 1px solid rgba(255,255,255,0.08);
     border-radius: 16px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.5);
+    box-shadow: 0 16px 48px rgba(0,0,0,0.65);
     overflow: hidden;
     z-index: 10000;
     transition: all 0.3s ease;
@@ -178,14 +179,15 @@
 #agent-header {
     position: relative;
     z-index: 10002;
-    background: #111;
+    background: #0a1120;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
     color: #fff;
-    padding: 12px;
+    padding: 13px 14px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-weight: bold;
-    font-size: 1rem;
+    font-weight: 700;
+    font-size: 0.95rem;
 }
 
 #agent-controls {
@@ -247,41 +249,54 @@
 #agent-form {
     display: flex;
     padding: 10px;
-    border-top: 1px solid #333;
-    background: #1e1e1e;
+    border-top: 1px solid rgba(255,255,255,0.07);
+    background: #0e1826;
 }
 
 #agent-input {
     flex: 1;
-    border: none;
-    padding: 10px;
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 10px 12px;
     border-radius: 8px;
     margin-right: 6px;
-    background: #2a2a2a;
-    color: #fff;
+    background: rgba(0,0,0,0.3);
+    color: #eef2ff;
+    font-family: inherit;
+    font-size: 0.9rem;
+    outline: none;
+    transition: border-color 0.2s;
 }
 
+#agent-input:focus { border-color: #3b82f6; }
+
 #agent-input::placeholder {
-    color: #888;
+    color: #7c8aa0;
+    opacity: 0.8;
 }
 
 #agent-form button[type="submit"] {
-    background: #2563eb;
+    background: #3b82f6;
     color: #fff;
     border: none;
     border-radius: 8px;
     padding: 0 16px;
     cursor: pointer;
+    font-weight: 600;
+    font-size: 0.85rem;
+    font-family: inherit;
+    transition: background 0.2s;
 }
+
+#agent-form button[type="submit"]:hover { background: #2563eb; }
 
 /* Toolbar */
 #agent-toolbar {
     display: flex;
     gap: 8px;
-    padding: 8px;
-    border-top: 1px solid #333;
+    padding: 7px 10px;
+    border-top: 1px solid rgba(255,255,255,0.07);
     justify-content: flex-end;
-    background: #1e1e1e;
+    background: #0e1826;
 }
 
 #agent-toolbar button {
@@ -329,17 +344,8 @@
     }
 }
 
-/* Mentions légales */
-.legal-panel {
-    background: #111;
-    color: #eee;
-    padding: 1.5em;
-    border-top: 1px solid #333;
-    max-width: 700px;
-    margin: 1em auto;
-    border-radius: 10px;
-    box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
-}
+/* Mentions légales — styles dans style.css */
+.legal-panel-unused { display: none; }
 
 .legal-btn-close {
     background: #2563eb;

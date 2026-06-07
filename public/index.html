@@ -1,10 +1,10 @@
 <!doctype html>
 <html lang="fr">
-
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-  <title>ProactifSystem — IA sur mesure</title>
+  <title>ProactifSystem — Solutions IA sur mesure</title>
+  <meta name="description" content="Automatisation intelligente, agents IA, analyse de données et chatbots — déployés rapidement pour votre entreprise.">
 
   <!-- FAVICONS -->
   <link rel="icon" href="/favicon.ico" sizes="any">
@@ -16,196 +16,343 @@
   <link rel="manifest" href="/site.webmanifest">
   <meta name="theme-color" content="#2563eb">
 
-  <!-- FONTS & CSS -->
-  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&display=swap" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="/style.css?v=3" />
+  <!-- FONTS -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- CSS -->
+  <link rel="stylesheet" href="/style.css?v=4" />
   <link rel="stylesheet" href="/chatbot.css" />
 </head>
-
 <body>
-  <!-- ════════════════════════════
-       HERO + NAVIGATION
-  ════════════════════════════ -->
-  <header class="hero">
-    <nav class="nav">
-      <div class="brand">ProactifSystem</div>
 
+  <!-- ════════════════════════════════════════════════════
+       NAVIGATION
+  ════════════════════════════════════════════════════ -->
+  <header class="site-header">
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="/" class="brand" aria-label="ProactifSystem — Accueil">ProactifSystem</a>
       <div class="links">
         <a href="#solutions">Solutions</a>
         <a href="/upload.html">Processus</a>
-        <a href="#contact">Contact</a>
-        <button id="faq-menu-btn">FAQ</button>
+        <a href="#contact" class="nav-cta">Contact</a>
+        <button id="faq-menu-btn" type="button">FAQ</button>
       </div>
     </nav>
-
-
-    <div class="hero-inner">
-      <h1>L'IA au service de votre productivité</h1>
-      <p>Automatisation intelligente, <strong>analyse de graphiques IA</strong>, chatbots et dashboards.</p>
-
-      <div class="cta">
-        <a class="btn" id="open-agent" href="#">Parler à l'agent</a>
-      </div>
-    </div>
   </header>
 
-  <!-- ════════════════════════════
-       BENTO SOLUTIONS
-  ════════════════════════════ -->
+  <!-- ════════════════════════════════════════════════════
+       HERO
+  ════════════════════════════════════════════════════ -->
+  <section class="hero" aria-label="Introduction">
+    <div class="hero-inner">
+      <div class="hero-badge" aria-hidden="true">
+        <span class="badge-dot"></span>
+        Solutions IA pour entreprises
+      </div>
+      <h1>
+        L'intelligence artificielle<br>
+        <span class="gradient-text">au service de votre croissance</span>
+      </h1>
+      <p>Automatisation sur mesure, agents IA, analyse de données et chatbots — déployés rapidement pour votre entreprise.</p>
+      <div class="hero-cta">
+        <a class="btn btn-primary" id="open-agent" href="#" aria-label="Ouvrir l'agent conversationnel">
+          Parler à l'agent
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+        </a>
+        <a class="btn btn-outline" href="#solutions">
+          Nos solutions
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ════════════════════════════════════════════════════
+       STATS BAR
+  ════════════════════════════════════════════════════ -->
+  <div class="stats-bar" aria-label="Chiffres clés">
+    <div class="stats-inner">
+      <div class="stat">
+        <strong>&lt;&nbsp;24h</strong>
+        <span>Délai de réponse garanti</span>
+      </div>
+      <div class="stat">
+        <strong>3 moteurs IA</strong>
+        <span>OpenAI · Perplexity · Claude</span>
+      </div>
+      <div class="stat">
+        <strong>AES-256</strong>
+        <span>Données 100 % chiffrées</span>
+      </div>
+    </div>
+  </div>
+
   <main>
-    <section id="solutions" class="bento">
-      <article class="card">
-        <h3>Applications & Logiciels sur mesure</h3>
-        <p>Outils web, scripts, intégrations API, automatisations adaptées à votre métier.</p>
-      </article>
 
-      <article class="card">
-        <h3>Automatisation IA</h3>
-        <p>Emails, CRM, reporting, workflows sans tâches répétitives.</p>
-      </article>
+    <!-- ════════════════════════════════════════════════════
+         SOLUTIONS BENTO
+    ════════════════════════════════════════════════════ -->
+    <section id="solutions" class="section" aria-labelledby="solutions-title">
+      <div class="section-header">
+        <h2 id="solutions-title">Nos solutions</h2>
+        <p>Des outils IA sur mesure pour chaque aspect de votre activité.</p>
+      </div>
 
-      <article class="card">
-        <h3>Analyse de données & Dashboards</h3>
-        <p>KPIs, rapports visuels, décision assistée par l'IA.</p>
-      </article>
+      <div class="bento-wrap">
+        <div class="bento">
 
-      <article class="card">
-        <h3>Chatbots & Agents</h3>
-        <p>Support, qualification, collecte de leads, FAQ intelligente.</p>
-      </article>
+          <!-- Card 1 — large (span 2) -->
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <!-- Icône : code brackets -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="16 18 22 12 16 6"></polyline>
+                <polyline points="8 6 2 12 8 18"></polyline>
+              </svg>
+            </div>
+            <h3>Applications &amp; Logiciels sur mesure</h3>
+            <p>Outils web, scripts, intégrations API et automatisations conçus spécifiquement pour votre métier — de la conception au déploiement.</p>
+          </article>
 
-      <article class="card" style="cursor:pointer;" onclick="location.href='/upload.html'">
-        <h3>📋 Gestion des processus</h3>
-        <p>Uploadez un texte ou des images — l'IA extrait et structure automatiquement vos étapes et schémas.</p>
-        <a href="/upload.html" style="color:var(--accent1);font-size:.9rem;text-decoration:none;margin-top:10px;display:inline-block;">Ouvrir l'outil →</a>
-      </article>
+          <!-- Card 2 -->
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <!-- Icône : repeat / loop -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="17 1 21 5 17 9"></polyline>
+                <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                <polyline points="7 23 3 19 7 15"></polyline>
+                <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+              </svg>
+            </div>
+            <h3>Automatisation IA</h3>
+            <p>Emails, CRM, reporting et workflows — plus aucune tâche répétitive.</p>
+          </article>
+
+          <!-- Card 3 -->
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <!-- Icône : bar chart -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6"  y1="20" x2="6"  y2="14"></line>
+                <line x1="2"  y1="20" x2="22" y2="20"></line>
+              </svg>
+            </div>
+            <h3>Analyse de données &amp; Dashboards</h3>
+            <p>KPIs, rapports visuels et décisions assistées par l'IA en temps réel.</p>
+          </article>
+
+          <!-- Card 4 — large (span 2) -->
+          <article class="card">
+            <div class="card-icon" aria-hidden="true">
+              <!-- Icône : message bubble -->
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+              </svg>
+            </div>
+            <h3>Chatbots &amp; Agents conversationnels</h3>
+            <p>Support client, qualification de leads, FAQ intelligente et agents autonomes disponibles 24h/24 — intégrés à votre site ou CRM en quelques jours.</p>
+          </article>
+
+          <!-- Card 5 — featured, pleine largeur -->
+          <article class="card card-featured">
+            <div class="card-body">
+              <div class="card-icon" aria-hidden="true">
+                <!-- Icône : layers -->
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
+                  <polyline points="2 17 12 22 22 17"></polyline>
+                  <polyline points="2 12 12 17 22 12"></polyline>
+                </svg>
+              </div>
+              <h3>Gestion des processus</h3>
+              <p>Déposez un texte ou des images — l'IA extrait automatiquement vos étapes, schémas et procédures en JSON structuré. Visualisez, partagez et expliquez chaque étape à la demande.</p>
+            </div>
+            <div class="card-cta">
+              <a class="btn btn-gradient" href="/upload.html">
+                Ouvrir l'outil
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+              </a>
+            </div>
+          </article>
+
+        </div>
+      </div>
     </section>
 
-    <!-- ════════════════════════════
-         CONTACT / FORMULAIRE
-    ════════════════════════════ -->
-    <section id="contact" class="contact">
-      <h2>Laissez-nous vos informations de contact</h2>
-
-      <form id="lead-form" class="form" autocomplete="on">
-        <input name="name" type="text" placeholder="Votre nom" required />
-        <input name="company" type="text" placeholder="Nom de votre entreprise" />
-        <input name="email" type="email" placeholder="Votre e-mail" required />
-
-        <label for="phone">Numéro de téléphone (avec indicatif)</label>
-        <input id="phone" name="phone" type="tel" placeholder="+33 6 12 34 56 78" required />
-
-        <textarea name="message" rows="5" placeholder="Décrivez votre besoin"></textarea>
-
-        <button class="btn" type="submit">Envoyer</button>
-      </form>
+    <!-- ════════════════════════════════════════════════════
+         COMMENT ÇA MARCHE
+    ════════════════════════════════════════════════════ -->
+    <section class="section howto" aria-labelledby="howto-title">
+      <div class="section-header">
+        <h2 id="howto-title">En 3 étapes simples</h2>
+        <p>De votre besoin à une solution déployée, sans complexité.</p>
+      </div>
+      <div class="howto-steps">
+        <div class="step">
+          <div class="step-num" aria-hidden="true">1</div>
+          <h3>Partagez votre besoin</h3>
+          <p>Via le chatbot, le formulaire ou par email — décrivez votre problématique ou objectif en quelques mots.</p>
+        </div>
+        <div class="step">
+          <div class="step-num" aria-hidden="true">2</div>
+          <h3>L'IA analyse et propose</h3>
+          <p>Notre agent structure votre demande, identifie les leviers d'action et propose une approche personnalisée.</p>
+        </div>
+        <div class="step">
+          <div class="step-num" aria-hidden="true">3</div>
+          <h3>Solution déployée</h3>
+          <p>Vous recevez un outil fonctionnel, sécurisé et adapté à votre contexte — opérationnel rapidement.</p>
+        </div>
+      </div>
     </section>
+
+    <!-- ════════════════════════════════════════════════════
+         FORMULAIRE CONTACT
+    ════════════════════════════════════════════════════ -->
+    <section id="contact" class="section" aria-labelledby="contact-title">
+      <div class="section-header">
+        <h2 id="contact-title">Parlons de votre projet</h2>
+        <p>Réponse garantie sous 24h. Vos données restent confidentielles et chiffrées.</p>
+      </div>
+      <div class="contact-wrap">
+        <form id="lead-form" class="form" autocomplete="on" novalidate aria-label="Formulaire de contact">
+          <div class="form-group">
+            <label for="f-name">Nom complet</label>
+            <input id="f-name"    name="name"    type="text"  placeholder="Votre nom" required autocomplete="name" />
+          </div>
+          <div class="form-group">
+            <label for="f-company">Entreprise</label>
+            <input id="f-company" name="company" type="text"  placeholder="Nom de votre entreprise" autocomplete="organization" />
+          </div>
+          <div class="form-group">
+            <label for="f-email">Adresse e-mail</label>
+            <input id="f-email"   name="email"   type="email" placeholder="votre@email.com" required autocomplete="email" />
+          </div>
+          <div class="form-group">
+            <label for="f-phone">
+              Téléphone
+              <span class="field-note">(avec indicatif pays)</span>
+            </label>
+            <input id="f-phone"   name="phone"   type="tel"   placeholder="+33 6 12 34 56 78" required autocomplete="tel" />
+          </div>
+          <div class="form-group">
+            <label for="f-message">Votre besoin</label>
+            <textarea id="f-message" name="message" rows="4" placeholder="Décrivez votre projet ou problématique…"></textarea>
+          </div>
+          <div id="lead-status" class="lead-status" aria-live="polite" role="status"></div>
+          <button class="btn btn-primary" type="submit" style="justify-content:center; width:100%; padding:14px;">
+            Envoyer ma demande
+          </button>
+        </form>
+      </div>
+    </section>
+
   </main>
 
-  <!-- ════════════════════════════
-       FOOTER + MENTIONS LÉGALES
-  ════════════════════════════ -->
+  <!-- ════════════════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════════════ -->
   <footer class="footer">
-    <p>© 2025 ProactifSystème — IA sur mesure</p>
-
-    <button id="legal-toggle" class="legal-btn">Mentions légales & Confidentialité</button>
-
-    <div id="legal-panel" class="legal-panel" style="display:none;">
+    <p style="margin-bottom:16px;">© 2025 ProactifSystème — IA sur mesure</p>
+    <button id="legal-toggle" class="legal-btn" type="button" aria-expanded="false" aria-controls="legal-panel">
+      Mentions légales &amp; Confidentialité
+    </button>
+    <div id="legal-panel" class="legal-panel" style="display:none;" aria-hidden="true">
       <h3>Mentions légales</h3>
       <p><strong>Éditeur :</strong> ProactifSystème, gérée par Didier Sellin.</p>
-      <p><strong>Email :</strong> contact@proactifsysteme.fr</p>
-      <p><strong>Hébergement :</strong> Serveur privé (Node.js / Express).</p>
-
+      <p><strong>Email :</strong> <a href="mailto:contact@proactifsysteme.fr">contact@proactifsysteme.fr</a></p>
+      <p><strong>Hébergement :</strong> Render.com (Node.js / Express).</p>
       <h3>Politique de confidentialité</h3>
-      <p>Les données sont utilisées uniquement pour répondre à vos demandes et ne sont jamais partagées.</p>
-
-      <p>Vous pouvez demander la suppression de vos données via
+      <p>Les données collectées sont utilisées uniquement pour répondre à vos demandes et ne sont jamais partagées avec des tiers. Elles sont chiffrées (AES-256) sur nos serveurs.</p>
+      <p>Vous pouvez demander la suppression de vos données à tout moment via
         <a href="mailto:contact@proactifsysteme.fr">contact@proactifsysteme.fr</a>.
       </p>
-
-      <button id="legal-close" class="legal-btn-close">Fermer</button>
+      <button id="legal-close" class="legal-btn-close" type="button">Fermer</button>
     </div>
   </footer>
 
-  <!-- ════════════════════════════
-       CHATBOT + FAQ
-  ════════════════════════════ -->
-  <div id="agent-widget" aria-live="polite">
+  <!-- ════════════════════════════════════════════════════
+       CHATBOT WIDGET
+       IDs préservés — ne pas modifier
+  ════════════════════════════════════════════════════ -->
+  <div id="agent-widget" aria-live="polite" aria-label="Agent conversationnel">
+    <div class="bubble" role="status">Je peux vous aider ?</div>
+    <button id="agent-toggle" type="button" aria-label="Ouvrir le chat">🤖</button>
 
-    <div class="bubble">Je peux vous aider ?</div>
-    <button id="agent-toggle" aria-label="Ouvrir le chat">🤖</button>
-
-    <div id="agent-panel">
-      <div id="agent-header">
+    <div id="agent-panel" role="dialog" aria-modal="true" aria-label="Chat agent ProactifSystème">
+      <div id="agent-header" class="agent-header">
         <strong>Agent ProactifSystème</strong>
         <div id="agent-controls">
-          <button id="agent-minimize" title="Réduire">—</button>
-          <button id="agent-expand" title="Agrandir">⤢</button>
-          <button id="agent-close" title="Fermer">✕</button>
+          <button id="agent-minimize" type="button" title="Réduire" aria-label="Réduire le chat">—</button>
+          <button id="agent-expand"   type="button" title="Agrandir" aria-label="Agrandir le chat">⤢</button>
+          <button id="agent-close"    type="button" title="Fermer"   aria-label="Fermer le chat">✕</button>
         </div>
       </div>
 
-      <div id="agent-log"></div>
-      <!-- FAQ POPUP -->
-      <div id="faq-box" class="faq-box" style="display:none;">
+      <div id="agent-log" role="log" aria-live="polite" aria-label="Historique de conversation"></div>
+
+      <div id="faq-box" class="faq-box" style="display:none;" role="complementary" aria-label="Questions fréquentes">
         <div id="faq-content" class="faq-content"></div>
-
         <div class="faq-nav">
-          <button id="faq-prev" class="faq-btn">⏮</button>
-          <button id="faq-next" class="faq-btn">⏭</button>
-          <button id="faq-close" class="faq-btn-close">❌</button>
+          <button id="faq-prev"  class="faq-btn"       type="button" aria-label="Question précédente">⏮</button>
+          <button id="faq-next"  class="faq-btn"       type="button" aria-label="Question suivante">⏭</button>
+          <button id="faq-close" class="faq-btn-close" type="button" aria-label="Fermer la FAQ">❌</button>
         </div>
       </div>
+
       <div id="agent-toolbar">
-        <button id="agent-clear">🗑️</button>
-        <button id="faq-open">📋 FAQ</button>
+        <button id="agent-clear" type="button" title="Effacer l'historique" aria-label="Effacer l'historique">🗑️</button>
+        <button id="faq-open"   type="button" aria-label="Ouvrir la FAQ">📋 FAQ</button>
       </div>
 
-      <form id="agent-form" autocomplete="off">
-        <input id="agent-input" type="text" placeholder="Posez votre question…" />
-        <button id="agent-mic" type="button">🎤</button>
-        <button type="submit">Envoyer</button>
+      <form id="agent-form" autocomplete="off" aria-label="Envoyer un message">
+        <input id="agent-input" type="text" placeholder="Posez votre question…" aria-label="Votre message" />
+        <button id="agent-mic" type="button" aria-label="Saisie vocale">🎤</button>
+        <button type="submit" aria-label="Envoyer">Envoyer</button>
       </form>
     </div>
-
   </div>
 
-  <!-- ════════════════════════════
+  <!-- ════════════════════════════════════════════════════
        SCRIPTS
-  ════════════════════════════ -->
+  ════════════════════════════════════════════════════ -->
   <script src="/js/config.js" defer></script>
   <script src="/js/agent.js?v=11"></script>
-
-  <!-- Mentions légales -->
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const toggleBtn = document.getElementById("legal-toggle");
+      const toggleBtn  = document.getElementById("legal-toggle");
       const legalPanel = document.getElementById("legal-panel");
-      const closeBtn = document.getElementById("legal-close");
+      const closeBtn   = document.getElementById("legal-close");
+
+      function openLegal() {
+        legalPanel.style.display = "block";
+        legalPanel.setAttribute("aria-hidden", "false");
+        toggleBtn.setAttribute("aria-expanded", "true");
+        legalPanel.scrollIntoView({ behavior: "smooth", block: "nearest" });
+      }
+      function closeLegal() {
+        legalPanel.style.display = "none";
+        legalPanel.setAttribute("aria-hidden", "true");
+        toggleBtn.setAttribute("aria-expanded", "false");
+      }
 
       toggleBtn?.addEventListener("click", () => {
-        const isOpen = legalPanel.style.display === "block";
-        legalPanel.style.display = isOpen ? "none" : "block";
-        if (!isOpen) {
-          legalPanel.scrollIntoView({ behavior: "smooth", block: "center" });
-        }
+        legalPanel.style.display === "block" ? closeLegal() : openLegal();
       });
-
-      closeBtn?.addEventListener("click", () => {
-        legalPanel.style.display = "none";
-      });
-
+      closeBtn?.addEventListener("click", closeLegal);
       document.addEventListener("click", (e) => {
-        if (legalPanel.style.display === "block"
-          && !legalPanel.contains(e.target)
-          && e.target !== toggleBtn) {
-          legalPanel.style.display = "none";
-        }
+        if (
+          legalPanel.style.display === "block" &&
+          !legalPanel.contains(e.target) &&
+          e.target !== toggleBtn
+        ) closeLegal();
       });
     });
   </script>
 
 </body>
-
 </html>
