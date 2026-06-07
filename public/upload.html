@@ -1,0 +1,535 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ProactifSystem — Gestion des processus</title>
+  <link rel="icon" href="/favicon.ico" sizes="any">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css?v=3" />
+  <style>
+    .page-wrap {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 40px 20px 80px;
+    }
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--accent1);
+      text-decoration: none;
+      font-size: .9rem;
+      margin-bottom: 32px;
+    }
+    .back-link:hover { text-decoration: underline; }
+    h1.page-title {
+      font-size: 1.9rem;
+      font-weight: 800;
+      margin: 0 0 6px;
+    }
+    .subtitle {
+      color: var(--muted);
+      margin: 0 0 36px;
+      font-size: .97rem;
+    }
+    /* ── Upload card ── */
+    .upload-card {
+      background: var(--surface);
+      border: 1px solid var(--bd);
+      border-radius: var(--r);
+      padding: 28px;
+      margin-bottom: 32px;
+    }
+    .upload-card h2 {
+      font-size: 1.1rem;
+      margin: 0 0 18px;
+      color: var(--accent1);
+    }
+    textarea#process-text {
+      width: 100%;
+      min-height: 160px;
+      background: #0b1220;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .95rem;
+      padding: 14px;
+      resize: vertical;
+      outline: none;
+      transition: border-color .2s;
+    }
+    textarea#process-text:focus { border-color: var(--accent1); }
+    .file-zone {
+      margin-top: 16px;
+      border: 2px dashed var(--bd);
+      border-radius: 8px;
+      padding: 22px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color .2s, background .2s;
+    }
+    .file-zone:hover, .file-zone.drag-over {
+      border-color: var(--accent1);
+      background: rgba(91,214,255,.05);
+    }
+    .file-zone input { display: none; }
+    .file-zone p { margin: 0; color: var(--muted); font-size: .9rem; }
+    .file-zone .icon { font-size: 2rem; margin-bottom: 8px; display: block; }
+    #file-list { margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; }
+    .file-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(91,214,255,.1);
+      border: 1px solid rgba(91,214,255,.25);
+      border-radius: 6px;
+      padding: 4px 10px;
+      font-size: .82rem;
+      color: var(--accent1);
+    }
+    .file-chip button {
+      background: none;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      padding: 0;
+      font-size: 1rem;
+      line-height: 1;
+    }
+    .btn-primary {
+      margin-top: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #000;
+      border: none;
+      border-radius: 8px;
+      padding: 12px 28px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity .2s;
+    }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    /* ── Status banner ── */
+    #status {
+      display: none;
+      padding: 14px 18px;
+      border-radius: 8px;
+      font-size: .93rem;
+      margin-bottom: 24px;
+    }
+    #status.success { background: rgba(91,255,150,.12); border: 1px solid rgba(91,255,150,.3); color: #5fff96; }
+    #status.error   { background: rgba(255,91,91,.12);  border: 1px solid rgba(255,91,91,.3);  color: #ff6b6b; }
+    /* ── Process list ── */
+    #process-list { display: flex; flex-direction: column; gap: 14px; }
+    .proc-card {
+      background: var(--surface);
+      border: 1px solid var(--bd);
+      border-radius: var(--r);
+      padding: 20px 22px;
+      cursor: pointer;
+      transition: border-color .2s;
+    }
+    .proc-card:hover { border-color: var(--accent1); }
+    .proc-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .proc-title { font-weight: 700; font-size: 1.05rem; margin: 0 0 4px; }
+    .proc-meta  { font-size: .8rem; color: var(--muted); }
+    .proc-badges { display: flex; gap: 6px; flex-shrink: 0; }
+    .badge {
+      background: rgba(155,123,255,.15);
+      border: 1px solid rgba(155,123,255,.3);
+      color: var(--accent2);
+      border-radius: 20px;
+      padding: 2px 10px;
+      font-size: .78rem;
+    }
+    .badge.blue {
+      background: rgba(91,214,255,.12);
+      border-color: rgba(91,214,255,.25);
+      color: var(--accent1);
+    }
+    .btn-delete {
+      background: none;
+      border: 1px solid rgba(255,91,91,.3);
+      color: #ff6b6b;
+      border-radius: 6px;
+      padding: 4px 12px;
+      font-size: .8rem;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-delete:hover { background: rgba(255,91,91,.12); }
+    /* ── Detail panel ── */
+    #detail-panel {
+      display: none;
+      background: var(--surface);
+      border: 1px solid var(--accent1);
+      border-radius: var(--r);
+      padding: 28px;
+      margin-top: 24px;
+    }
+    #detail-panel h2 { margin: 0 0 6px; font-size: 1.3rem; }
+    .close-detail {
+      float: right;
+      background: none;
+      border: none;
+      color: var(--muted);
+      font-size: 1.4rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+    .steps-list { list-style: none; padding: 0; margin: 18px 0 0; }
+    .step-item {
+      display: flex;
+      gap: 14px;
+      padding: 14px 0;
+      border-bottom: 1px solid var(--bd);
+      align-items: flex-start;
+    }
+    .step-item:last-child { border-bottom: none; }
+    .step-num {
+      background: linear-gradient(135deg, var(--accent1), var(--accent2));
+      color: #000;
+      font-weight: 800;
+      border-radius: 50%;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .8rem;
+      flex-shrink: 0;
+    }
+    .step-body { flex: 1; }
+    .step-title { font-weight: 600; margin-bottom: 3px; }
+    .step-desc  { color: var(--muted); font-size: .88rem; }
+    .step-img   { max-width: 100%; border-radius: 6px; margin-top: 8px; display: block; }
+    .btn-explain {
+      margin-top: 8px;
+      background: rgba(91,214,255,.1);
+      border: 1px solid rgba(91,214,255,.25);
+      color: var(--accent1);
+      border-radius: 6px;
+      padding: 5px 14px;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: background .15s;
+    }
+    .btn-explain:hover { background: rgba(91,214,255,.2); }
+    .explain-box {
+      margin-top: 10px;
+      background: rgba(0,0,0,.3);
+      border-radius: 8px;
+      padding: 12px 14px;
+      font-size: .88rem;
+      color: var(--text);
+      line-height: 1.55;
+      display: none;
+    }
+    #empty-msg {
+      text-align: center;
+      color: var(--muted);
+      padding: 40px 0;
+      font-size: .95rem;
+      display: none;
+    }
+    .spinner {
+      display: inline-block;
+      width: 16px; height: 16px;
+      border: 2px solid rgba(0,0,0,.3);
+      border-top-color: #000;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <header class="hero" style="min-height:0; padding-bottom:0;">
+    <nav class="nav">
+      <div class="brand">ProactifSystem</div>
+      <div class="links">
+        <a href="/">Accueil</a>
+      </div>
+    </nav>
+  </header>
+
+  <div class="page-wrap">
+    <a href="/" class="back-link">← Retour à l'accueil</a>
+    <h1 class="page-title">Gestion des processus</h1>
+    <p class="subtitle">Déposez un texte (étapes, procédures) et des images — l'IA extrait et structure automatiquement le processus.</p>
+
+    <!-- ── Formulaire upload ── -->
+    <div class="upload-card">
+      <h2>Nouveau processus</h2>
+
+      <textarea id="process-text" placeholder="Collez ici votre texte de processus : étapes numérotées, procédures, schémas décrits..."></textarea>
+
+      <div class="file-zone" id="drop-zone">
+        <input type="file" id="file-input" accept="image/*" multiple>
+        <span class="icon">🖼️</span>
+        <p>Glissez des images ici ou <u>cliquez pour choisir</u> (JPG, PNG, WebP — max 5 Mo chacune)</p>
+      </div>
+      <div id="file-list"></div>
+
+      <button class="btn-primary" id="btn-upload">
+        <span>Analyser avec l'IA</span>
+      </button>
+    </div>
+
+    <div id="status"></div>
+
+    <!-- ── Liste des processus ── -->
+    <h2 style="margin:0 0 16px; font-size:1.1rem; color:var(--muted);">Mes processus</h2>
+    <div id="empty-msg">Aucun processus pour cette session.</div>
+    <div id="process-list"></div>
+
+    <!-- ── Panneau détail ── -->
+    <div id="detail-panel">
+      <button class="close-detail" id="close-detail">✕</button>
+      <h2 id="detail-title"></h2>
+      <p id="detail-meta" style="color:var(--muted);font-size:.85rem;margin:0 0 18px;"></p>
+      <ul class="steps-list" id="detail-steps"></ul>
+    </div>
+  </div>
+
+  <script src="/js/config.js"></script>
+  <script>
+    const API = window.API_BASE_URL || '';
+    let selectedFiles = [];
+
+    /* ─── Drag & drop ─── */
+    const dropZone = document.getElementById('drop-zone');
+    const fileInput = document.getElementById('file-input');
+
+    dropZone.addEventListener('click', () => fileInput.click());
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+      e.preventDefault();
+      dropZone.classList.remove('drag-over');
+      addFiles(e.dataTransfer.files);
+    });
+    fileInput.addEventListener('change', () => addFiles(fileInput.files));
+
+    function addFiles(files) {
+      for (const f of files) {
+        if (!selectedFiles.find(x => x.name === f.name && x.size === f.size)) {
+          selectedFiles.push(f);
+        }
+      }
+      renderFileList();
+    }
+
+    function renderFileList() {
+      const el = document.getElementById('file-list');
+      el.innerHTML = '';
+      selectedFiles.forEach((f, i) => {
+        const chip = document.createElement('div');
+        chip.className = 'file-chip';
+        chip.innerHTML = `🖼 ${f.name} <button title="Retirer" data-i="${i}">✕</button>`;
+        chip.querySelector('button').addEventListener('click', () => {
+          selectedFiles.splice(i, 1);
+          renderFileList();
+        });
+        el.appendChild(chip);
+      });
+    }
+
+    /* ─── Upload ─── */
+    document.getElementById('btn-upload').addEventListener('click', async () => {
+      const text = document.getElementById('process-text').value.trim();
+      if (!text) { showStatus('Veuillez saisir un texte de processus.', 'error'); return; }
+
+      const btn = document.getElementById('btn-upload');
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner"></span> Analyse en cours…';
+
+      const form = new FormData();
+      form.append('text', text);
+      selectedFiles.forEach(f => form.append('images', f));
+
+      try {
+        const res = await fetch(`${API}/api/process`, {
+          method: 'POST',
+          credentials: 'include',
+          body: form
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erreur serveur');
+        showStatus(`✅ Processus « ${data.process.title} » créé avec ${data.process.steps.length} étape(s).`, 'success');
+        document.getElementById('process-text').value = '';
+        selectedFiles = [];
+        renderFileList();
+        loadProcesses();
+      } catch (e) {
+        showStatus('Erreur : ' + e.message, 'error');
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<span>Analyser avec l\'IA</span>';
+      }
+    });
+
+    function showStatus(msg, type) {
+      const el = document.getElementById('status');
+      el.textContent = msg;
+      el.className = type;
+      el.style.display = 'block';
+      setTimeout(() => { el.style.display = 'none'; }, 6000);
+    }
+
+    /* ─── Liste des processus ─── */
+    async function loadProcesses() {
+      try {
+        const res = await fetch(`${API}/api/process`, { credentials: 'include' });
+        const data = await res.json();
+        renderList(data.processes || []);
+      } catch {
+        renderList([]);
+      }
+    }
+
+    function renderList(list) {
+      const el = document.getElementById('process-list');
+      const empty = document.getElementById('empty-msg');
+      el.innerHTML = '';
+      if (!list.length) { empty.style.display = 'block'; return; }
+      empty.style.display = 'none';
+
+      list.slice().reverse().forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'proc-card';
+        card.innerHTML = `
+          <div class="proc-header">
+            <div>
+              <div class="proc-title">${esc(p.title)}</div>
+              <div class="proc-meta">${new Date(p.createdAt).toLocaleString('fr-FR')}</div>
+            </div>
+            <div class="proc-badges">
+              <span class="badge blue">${p.steps.length} étape(s)</span>
+              ${p.schemas.length ? `<span class="badge">${p.schemas.length} schéma(s)</span>` : ''}
+              <button class="btn-delete" data-id="${p.id}">Supprimer</button>
+            </div>
+          </div>
+        `;
+        card.addEventListener('click', e => {
+          if (e.target.classList.contains('btn-delete')) return;
+          openDetail(p.id);
+        });
+        card.querySelector('.btn-delete').addEventListener('click', async e => {
+          e.stopPropagation();
+          if (!confirm('Supprimer ce processus ?')) return;
+          await fetch(`${API}/api/process/${p.id}`, { method: 'DELETE', credentials: 'include' });
+          loadProcesses();
+          document.getElementById('detail-panel').style.display = 'none';
+        });
+        el.appendChild(card);
+      });
+    }
+
+    /* ─── Détail d'un processus ─── */
+    async function openDetail(id) {
+      const panel = document.getElementById('detail-panel');
+      panel.style.display = 'block';
+      panel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      document.getElementById('detail-title').textContent = 'Chargement…';
+      document.getElementById('detail-steps').innerHTML = '';
+
+      const res = await fetch(`${API}/api/process/${id}`, { credentials: 'include' });
+      const data = await res.json();
+      const p = data.process;
+
+      document.getElementById('detail-title').textContent = p.title;
+      document.getElementById('detail-meta').textContent =
+        `${p.steps.length} étape(s) · ${p.schemas.length} schéma(s) · créé le ${new Date(p.createdAt).toLocaleString('fr-FR')}`;
+
+      const ul = document.getElementById('detail-steps');
+      p.steps.forEach(s => {
+        const li = document.createElement('li');
+        li.className = 'step-item';
+        li.innerHTML = `
+          <div class="step-num">${s.index}</div>
+          <div class="step-body">
+            <div class="step-title">${esc(s.title)}</div>
+            <div class="step-desc">${esc(s.description || '')}</div>
+            ${s.imageUrl ? `<img class="step-img" src="${API}${esc(s.imageUrl)}" alt="image étape ${s.index}">` : ''}
+            <button class="btn-explain" data-pid="${p.id}" data-type="step" data-idx="${s.index}">💡 Expliquer cette étape</button>
+            <div class="explain-box" id="exp-step-${s.index}"></div>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+
+      if (p.schemas.length) {
+        const sep = document.createElement('li');
+        sep.style.cssText = 'padding:14px 0 6px; color:var(--accent2); font-weight:700; border:none; list-style:none;';
+        sep.textContent = 'Schémas';
+        ul.appendChild(sep);
+        p.schemas.forEach(s => {
+          const li = document.createElement('li');
+          li.className = 'step-item';
+          li.innerHTML = `
+            <div class="step-num" style="background:var(--accent2)">S${s.index}</div>
+            <div class="step-body">
+              <div class="step-title">${esc(s.title)}</div>
+              <div class="step-desc">${esc(s.description || '')}</div>
+              <button class="btn-explain" data-pid="${p.id}" data-type="schema" data-idx="${s.index}">💡 Expliquer ce schéma</button>
+              <div class="explain-box" id="exp-schema-${s.index}"></div>
+            </div>
+          `;
+          ul.appendChild(li);
+        });
+      }
+
+      ul.querySelectorAll('.btn-explain').forEach(btn => {
+        btn.addEventListener('click', () => explainItem(btn));
+      });
+    }
+
+    async function explainItem(btn) {
+      const { pid, type, idx } = btn.dataset;
+      const box = document.getElementById(`exp-${type}-${idx}`);
+      if (box.style.display === 'block') { box.style.display = 'none'; return; }
+      btn.disabled = true;
+      btn.textContent = '⏳ Génération…';
+      try {
+        const res = await fetch(`${API}/api/process/${pid}/explain`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, index: parseInt(idx) })
+        });
+        const data = await res.json();
+        box.textContent = data.explanation || 'Aucune explication générée.';
+        box.style.display = 'block';
+      } catch {
+        box.textContent = 'Erreur lors de la génération.';
+        box.style.display = 'block';
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = '💡 Expliquer';
+      }
+    }
+
+    document.getElementById('close-detail').addEventListener('click', () => {
+      document.getElementById('detail-panel').style.display = 'none';
+    });
+
+    function esc(str) {
+      return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+
+    loadProcesses();
+  </script>
+</body>
+</html>
