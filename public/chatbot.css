@@ -74,13 +74,19 @@
     background: #3b82f6;
     color: #fff;
     box-shadow: 0 8px 28px rgba(59, 130, 246, 0.45);
-    transition: transform 0.25s ease, box-shadow 0.25s ease;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, opacity 0.2s ease;
     z-index: 10001;
 }
 
 #agent-toggle:hover {
     transform: scale(1.08);
     box-shadow: 0 12px 36px rgba(59, 130, 246, 0.6);
+}
+
+#agent-widget.open #agent-toggle {
+    opacity: 0;
+    transform: scale(0.5);
+    pointer-events: none;
 }
 
 /* ═══════════════════════════════════════════════════════
