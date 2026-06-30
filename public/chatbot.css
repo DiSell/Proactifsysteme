@@ -298,12 +298,18 @@
     font-size: 0.88rem;
     padding: 4px 8px;
     border-radius: 5px;
+    display: inline-flex;
+    align-items: center;
     transition: color 0.2s, background 0.2s;
 }
 
 #agent-toolbar button:hover {
     color: #fff;
     background: rgba(255, 255, 255, 0.08);
+}
+
+#agent-toolbar button svg {
+    pointer-events: none;
 }
 
 /* ════════════════════════════════════════════
