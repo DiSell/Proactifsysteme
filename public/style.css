@@ -149,18 +149,6 @@ a { color: inherit; text-decoration: none; }
   border-color: var(--bd);
 }
 
-.links a.nav-cta {
-  color: #93c5fd;
-  border-color: rgba(59,130,246,0.3);
-  background: rgba(59,130,246,0.08);
-}
-
-.links a.nav-cta:hover {
-  color: #fff;
-  background: rgba(59,130,246,0.16);
-  border-color: rgba(59,130,246,0.5);
-}
-
 /* ══════════════════════════════════════════════════════════
    HERO
 ══════════════════════════════════════════════════════════ */
