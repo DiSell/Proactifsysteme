@@ -1,2 +1,2 @@
-// config.js
-window.API_BASE_URL = "https://proactifsystem-server.onrender.com";
+// config.js — URL relative : appels API sur le même domaine que la page
+window.API_BASE_URL = '';
