@@ -887,7 +887,7 @@ app.post('/api/process/:id/explain', processLimiter, async (req, res) => {
     const label = type === 'step' ? 'Étape' : 'Schéma';
     const contextSteps = p.steps.map(s => `  Étape ${s.index}: ${s.title}`).join('\n');
 
-    const prompt = `Tu es un expert en documentation de processus métier.
+    const prompt = `Tu es un expert en automatisation de processus métier travaillant pour ProactifSystème, une société spécialisée en solutions IA sur mesure.
 
 Processus : "${p.title}"
 ${label} ${item.index} — "${item.title}"
@@ -896,7 +896,13 @@ Description : ${item.description}
 Contexte global du processus :
 ${contextSteps}
 
-${q ? `Question : ${q}` : `Explique cette ${label.toLowerCase()} de façon claire, précise et utile pour quelqu'un qui doit l'exécuter.`}`;
+${q ? `Question : ${q}` : `Réponds en 3 parties courtes :
+
+1. **Ce que fait cette étape** — explication claire et concrète pour quelqu'un qui doit l'exécuter.
+2. **Ce qui peut être automatisé** — identifie précisément les tâches répétitives, les saisies manuelles, les délais ou les risques d'erreur humaine dans cette étape.
+3. **Comment ProactifSystème peut aider** — propose une solution IA concrète (agent IA, automatisation, intégration) adaptée à cette étape spécifique.
+
+Sois direct, concis et orienté résultat business.`}`;
 
     const result = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
