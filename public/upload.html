@@ -201,6 +201,17 @@
       padding-top: 8px;
       margin-top: 4px;
     }
+    .ap-badge {
+      font-size: .72rem;
+      font-weight: 700;
+      background: rgba(155,123,255,.2);
+      border: 1px solid rgba(155,123,255,.4);
+      color: var(--accent2);
+      border-radius: 20px;
+      padding: 2px 10px;
+      vertical-align: middle;
+      margin-left: 6px;
+    }
     /* ── Detail panel ── */
     #detail-panel {
       display: none;
@@ -373,7 +384,7 @@
 
       <!-- Bloc proposition d'automatisation -->
       <div class="auto-proposal" id="auto-proposal-block" style="display:none;">
-        <h3>⚡ Proposition d'automatisation</h3>
+        <h3>⚡ Proposition d'automatisation <span class="ap-badge" id="ap-approach" style="display:none;"></span></h3>
         <p id="ap-summary"></p>
         <ul id="ap-quickwins"></ul>
         <p class="auto-solution" id="ap-solution"></p>
@@ -553,16 +564,18 @@
       document.getElementById('detail-title').textContent = p.title;
 
       // Bloc automatisation
-      const ap = p.automation_proposal;
-      const apEl = document.getElementById('auto-proposal-block');
-      if (ap && apEl) {
+      if (p.automation_proposal) {
+        showProposal(p.automation_proposal);
+      } else {
+        const apEl = document.getElementById('auto-proposal-block');
         apEl.style.display = 'block';
-        document.getElementById('ap-summary').textContent = ap.summary || '';
-        const qwEl = document.getElementById('ap-quickwins');
-        qwEl.innerHTML = (ap.quick_wins || []).map(w => `<li>${esc(w)}</li>`).join('');
-        document.getElementById('ap-solution').textContent = ap.solution || '';
-      } else if (apEl) {
-        apEl.style.display = 'none';
+        document.getElementById('ap-summary').textContent = '⏳ Génération de votre proposition…';
+        document.getElementById('ap-quickwins').innerHTML = '';
+        document.getElementById('ap-solution').textContent = '';
+        fetch(`${API}/api/process/${id}/automate`, { method: 'POST', credentials: 'include' })
+          .then(r => r.json())
+          .then(data => { if (data.automation_proposal) showProposal(data.automation_proposal); })
+          .catch(() => { apEl.style.display = 'none'; });
       }
 
       document.getElementById('quote-form').style.display = 'none';
@@ -662,6 +675,21 @@
         btn.textContent = 'Envoyer ma demande de devis';
       }
     });
+
+    function showProposal(ap) {
+      const apEl = document.getElementById('auto-proposal-block');
+      apEl.style.display = 'block';
+      document.getElementById('ap-summary').textContent = ap.summary || '';
+      document.getElementById('ap-quickwins').innerHTML = (ap.quick_wins || []).map(w => `<li>${esc(w)}</li>`).join('');
+      document.getElementById('ap-solution').textContent = ap.solution || '';
+      const badge = document.getElementById('ap-approach');
+      if (ap.approach) {
+        badge.textContent = ap.approach === 'no-code' ? '🔌 No-code' : '⚙️ Sur mesure';
+        badge.style.display = 'inline-flex';
+      } else {
+        badge.style.display = 'none';
+      }
+    }
 
     function esc(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');

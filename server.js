@@ -919,6 +919,58 @@ Sois ultra-concis. Pas de sous-liste, pas de numérotation interne.`}`;
   }
 });
 
+// POST /api/process/:id/automate — génère (et sauvegarde) la proposition d'automatisation
+app.post('/api/process/:id/automate', processLimiter, async (req, res) => {
+  try {
+    const all = await readProcesses();
+    const p = all[req.params.id];
+    if (!p) return res.status(404).json({ ok: false, message: 'Processus introuvable.' });
+
+    if (p.automation_proposal) return res.json({ ok: true, automation_proposal: p.automation_proposal });
+
+    const stepsText = p.steps.map(s => `${s.index}. ${s.title} — ${s.description || ''}`).join('\n');
+
+    const result = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{
+        role: 'user',
+        content: `Tu es un expert en automatisation pour ProactifSystème (solutions IA sur mesure).
+
+Processus : "${p.title}"
+Étapes :
+${stepsText.slice(0, 2000)}
+
+Génère une proposition d'automatisation percutante pour convaincre le prospect de demander un devis.
+Retourne UNIQUEMENT ce JSON :
+{
+  "summary": "2 phrases : quelles étapes sont automatisables et le gain concret (temps gagné, erreurs évitées).",
+  "quick_wins": ["action concrète 1 ex: Réception email → CRM automatique", "action concrète 2", "action concrète 3"],
+  "approach": "no-code ou sur-mesure",
+  "solution": "1 phrase : recommande soit une solution no-code (Make, Zapier) soit un agent IA sur mesure ProactifSystème, avec bénéfice chiffré."
+}`
+      }],
+      max_tokens: 350,
+      temperature: 0.3,
+      response_format: { type: 'json_object' }
+    });
+
+    const ap = JSON.parse(result.choices[0].message.content);
+
+    await withFileQueue(PROCESSES_PATH, async () => {
+      const fresh = await readProcesses();
+      if (fresh[req.params.id]) {
+        fresh[req.params.id].automation_proposal = ap;
+        await writeProcesses(fresh);
+      }
+    });
+
+    res.json({ ok: true, automation_proposal: ap });
+  } catch (err) {
+    logger.error('Process automate error', { error: err.message });
+    res.status(500).json({ ok: false, message: 'Erreur serveur.' });
+  }
+});
+
 // DELETE /api/process/:id — supprime un processus (session propriétaire uniquement)
 app.delete('/api/process/:id', processLimiter, async (req, res) => {
   try {
