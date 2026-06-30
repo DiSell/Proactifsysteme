@@ -96,7 +96,7 @@
     display: none;
     flex-direction: column;
     position: fixed;
-    bottom: 100px;
+    bottom: 20px;
     right: 20px;
     width: 360px;
     height: 520px;
