@@ -671,28 +671,11 @@ textarea { resize: vertical; min-height: 100px; }
 }
 
 /* ══════════════════════════════════════════════════════════
-   CHATBOT TOGGLE (partagé avec chatbot.css)
+   SCROLL OFFSET — compense le header sticky
 ══════════════════════════════════════════════════════════ */
-#agent-toggle {
-  position: fixed;
-  right: 24px;
-  bottom: 24px;
-  width: 64px;
-  height: 64px;
-  border: none;
-  border-radius: 50%;
-  cursor: pointer;
-  font-size: 28px;
-  background: var(--blue);
-  color: #fff;
-  box-shadow: 0 8px 28px rgba(59,130,246,0.45);
-  transition: transform 0.2s, box-shadow 0.2s;
-  z-index: 10001;
-}
-
-#agent-toggle:hover {
-  transform: scale(1.06);
-  box-shadow: 0 12px 36px rgba(59,130,246,0.55);
+#solutions,
+#contact {
+  scroll-margin-top: 70px;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -736,20 +719,4 @@ textarea { resize: vertical; min-height: 100px; }
 
   .form { padding: 24px 18px; }
 
-  #agent-toggle { width: 58px; height: 58px; font-size: 26px; right: 16px; bottom: 16px; }
-  #agent-panel  { right: 8px; left: 8px; width: auto; }
-}
-
-/* ══════════════════════════════════════════════════════════
-   LANDSCAPE TRÈS BAS
-══════════════════════════════════════════════════════════ */
-@media (max-height: 480px) {
-  #agent-panel {
-    width: 96vw !important;
-    height: 85vh !important;
-    left: 2vw !important;
-    right: 2vw !important;
-    bottom: 10px !important;
-    border-radius: 10px !important;
-  }
 }
