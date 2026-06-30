@@ -372,7 +372,7 @@
     <div id="status"></div>
 
     <!-- ── Liste des processus ── -->
-    <h2 style="margin:0 0 16px; font-size:1.1rem; color:var(--muted);">Mes processus</h2>
+    <h2 id="process-heading" style="margin:0 0 16px; font-size:1.1rem; color:var(--muted); display:none;">Mes processus</h2>
     <div id="empty-msg">Aucun processus pour cette session.</div>
     <div id="process-list"></div>
 
@@ -513,9 +513,11 @@
     function renderList(list) {
       const el = document.getElementById('process-list');
       const empty = document.getElementById('empty-msg');
+      const heading = document.getElementById('process-heading');
       el.innerHTML = '';
-      if (!list.length) { empty.style.display = 'block'; return; }
+      if (!list.length) { empty.style.display = 'none'; heading.style.display = 'none'; return; }
       empty.style.display = 'none';
+      heading.style.display = 'block';
 
       list.slice().reverse().forEach(p => {
         const card = document.createElement('div');
@@ -563,20 +565,17 @@
       currentProcessTitle = p.title;
       document.getElementById('detail-title').textContent = p.title;
 
-      // Bloc automatisation
-      if (p.automation_proposal) {
-        showProposal(p.automation_proposal);
-      } else {
-        const apEl = document.getElementById('auto-proposal-block');
-        apEl.style.display = 'block';
-        document.getElementById('ap-summary').textContent = '⏳ Génération de votre proposition…';
-        document.getElementById('ap-quickwins').innerHTML = '';
-        document.getElementById('ap-solution').textContent = '';
-        fetch(`${API}/api/process/${id}/automate`, { method: 'POST', credentials: 'include' })
-          .then(r => r.json())
-          .then(data => { if (data.automation_proposal) showProposal(data.automation_proposal); })
-          .catch(() => { apEl.style.display = 'none'; });
-      }
+      // Bloc automatisation — régénéré à chaque ouverture pour rester cohérent
+      const apEl = document.getElementById('auto-proposal-block');
+      apEl.style.display = 'block';
+      document.getElementById('ap-summary').textContent = '⏳ Génération de votre proposition…';
+      document.getElementById('ap-quickwins').innerHTML = '';
+      document.getElementById('ap-solution').textContent = '';
+      document.getElementById('ap-approach').style.display = 'none';
+      fetch(`${API}/api/process/${id}/automate`, { method: 'POST', credentials: 'include' })
+        .then(r => r.json())
+        .then(data => { if (data.automation_proposal) showProposal(data.automation_proposal); else apEl.style.display = 'none'; })
+        .catch(() => { apEl.style.display = 'none'; });
 
       document.getElementById('quote-form').style.display = 'none';
       document.getElementById('quote-status').textContent = '';

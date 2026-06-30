@@ -926,8 +926,6 @@ app.post('/api/process/:id/automate', processLimiter, async (req, res) => {
     const p = all[req.params.id];
     if (!p) return res.status(404).json({ ok: false, message: 'Processus introuvable.' });
 
-    if (p.automation_proposal) return res.json({ ok: true, automation_proposal: p.automation_proposal });
-
     const stepsText = p.steps.map(s => `${s.index}. ${s.title} — ${s.description || ''}`).join('\n');
 
     const result = await openai.chat.completions.create({
