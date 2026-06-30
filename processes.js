@@ -31,7 +31,9 @@ async function parseWithAI(text, openai) {
     model: 'gpt-4o-mini',
     messages: [{
       role: 'user',
-      content: `Analyse ce texte de processus et extrait les étapes et schémas. Retourne UNIQUEMENT un JSON valide.
+      content: `Tu es un expert en automatisation de processus métier pour ProactifSystème (solutions IA sur mesure).
+
+Analyse ce texte de processus. Retourne UNIQUEMENT un JSON valide.
 
 TEXTE:
 ${text.slice(0, 4000)}
@@ -39,6 +41,11 @@ ${text.slice(0, 4000)}
 Structure JSON attendue:
 {
   "title": "titre général du processus",
+  "automation_proposal": {
+    "summary": "En 2 phrases : quelles étapes clés peuvent être automatisées et quel gain concret (temps, erreurs, coût).",
+    "quick_wins": ["tâche automatisable 1", "tâche automatisable 2", "tâche automatisable 3"],
+    "solution": "En 1 phrase : quelle solution ProactifSystème recommande-t-on (type d'agent IA ou automatisation)."
+  },
   "steps": [
     { "index": 1, "title": "titre court de l'étape", "description": "description complète" }
   ],
@@ -51,7 +58,8 @@ Règles:
 - Extrais toutes les étapes (numérotées, tirets, Étape X, Step X, etc.)
 - Extrais les schémas/diagrammes/flux mentionnés explicitement
 - Si aucun schéma mentionné: schemas = []
-- title = titre global du processus (déduit du contenu si absent)`
+- title = titre global du processus (déduit du contenu si absent)
+- automation_proposal : identifie les 3 tâches les plus répétitives ou manuelles à automatiser en priorité`
     }],
     max_tokens: 1500,
     temperature: 0.1,

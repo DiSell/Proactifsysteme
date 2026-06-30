@@ -173,6 +173,34 @@
       transition: background .15s;
     }
     .btn-delete:hover { background: rgba(255,91,91,.12); }
+    /* ── Automation proposal ── */
+    .auto-proposal {
+      background: linear-gradient(135deg, rgba(91,214,255,0.08), rgba(155,123,255,0.06));
+      border: 1px solid rgba(91,214,255,0.25);
+      border-radius: 10px;
+      padding: 18px 20px;
+      margin-bottom: 24px;
+    }
+    .auto-proposal h3 {
+      font-size: .95rem;
+      font-weight: 700;
+      color: var(--accent1);
+      margin: 0 0 8px;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+    }
+    .auto-proposal p { font-size: .88rem; color: var(--text); margin: 0 0 10px; line-height: 1.55; }
+    .auto-proposal ul { margin: 0 0 10px; padding-left: 18px; }
+    .auto-proposal li { font-size: .85rem; color: #c8d4e8; margin-bottom: 4px; }
+    .auto-solution {
+      font-size: .85rem;
+      color: var(--accent2);
+      font-weight: 600;
+      border-top: 1px solid rgba(155,123,255,0.2);
+      padding-top: 8px;
+      margin-top: 4px;
+    }
     /* ── Detail panel ── */
     #detail-panel {
       display: none;
@@ -374,6 +402,15 @@
       <button class="close-detail" id="close-detail">✕</button>
       <h2 id="detail-title"></h2>
       <p id="detail-meta" style="color:var(--muted);font-size:.85rem;margin:0 0 18px;"></p>
+
+      <!-- Bloc proposition d'automatisation -->
+      <div class="auto-proposal" id="auto-proposal-block" style="display:none;">
+        <h3>⚡ Proposition d'automatisation</h3>
+        <p id="ap-summary"></p>
+        <ul id="ap-quickwins"></ul>
+        <p class="auto-solution" id="ap-solution"></p>
+      </div>
+
       <ul class="steps-list" id="detail-steps"></ul>
 
       <!-- CTA devis -->
@@ -546,6 +583,20 @@
 
       currentProcessTitle = p.title;
       document.getElementById('detail-title').textContent = p.title;
+
+      // Bloc automatisation
+      const ap = p.automation_proposal;
+      const apEl = document.getElementById('auto-proposal-block');
+      if (ap && apEl) {
+        apEl.style.display = 'block';
+        document.getElementById('ap-summary').textContent = ap.summary || '';
+        const qwEl = document.getElementById('ap-quickwins');
+        qwEl.innerHTML = (ap.quick_wins || []).map(w => `<li>${esc(w)}</li>`).join('');
+        document.getElementById('ap-solution').textContent = ap.solution || '';
+      } else if (apEl) {
+        apEl.style.display = 'none';
+      }
+
       document.getElementById('quote-form').style.display = 'none';
       document.getElementById('quote-status').textContent = '';
       document.getElementById('btn-send-quote').style.display = '';
