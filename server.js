@@ -896,19 +896,19 @@ Description : ${item.description}
 Contexte global du processus :
 ${contextSteps}
 
-${q ? `Question : ${q}` : `Réponds en 3 parties courtes :
+${q ? `Question : ${q}` : `Réponds en 3 blocs courts (2-3 phrases max chacun) :
 
-1. **Ce que fait cette étape** — explication claire et concrète pour quelqu'un qui doit l'exécuter.
-2. **Ce qui peut être automatisé** — identifie précisément les tâches répétitives, les saisies manuelles, les délais ou les risques d'erreur humaine dans cette étape.
-3. **Comment ProactifSystème peut aider** — propose une solution IA concrète (agent IA, automatisation, intégration) adaptée à cette étape spécifique.
+**Ce que fait cette étape** — en une phrase simple.
+**Ce qui peut être automatisé** — cite 2-3 éléments concrets (ex: saisie manuelle, email de confirmation, tri des demandes).
+**Solution ProactifSystème** — propose un outil ou agent IA précis pour cette étape.
 
-Sois direct, concis et orienté résultat business.`}`;
+Sois ultra-concis. Pas de sous-liste, pas de numérotation interne.`}`;
 
     const result = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [{ role: 'user', content: prompt }],
-      max_tokens: 500,
-      temperature: 0.4
+      max_tokens: 300,
+      temperature: 0.3
     });
 
     const explanation = result.choices[0]?.message?.content?.trim() || 'Explication indisponible.';
