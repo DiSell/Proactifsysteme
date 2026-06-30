@@ -941,13 +941,15 @@ Processus : "${p.title}"
 ${stepsText.slice(0, 2000)}
 
 Génère une proposition d'automatisation percutante pour convaincre le prospect de demander un devis.
-Retourne UNIQUEMENT ce JSON :
+Retourne UNIQUEMENT ce JSON valide :
 {
-  "summary": "2 phrases : quelles étapes sont automatisables et le gain concret (temps gagné, erreurs évitées).",
-  "quick_wins": ["action concrète 1 ex: Réception email → CRM automatique", "action concrète 2", "action concrète 3"],
-  "approach": "no-code ou sur-mesure",
-  "solution": "1 phrase : recommande soit une solution no-code (Make, Zapier) soit un agent IA sur mesure ProactifSystème, avec bénéfice chiffré."
-}`
+  "summary": "2 phrases : quelles étapes sont automatisables et le gain concret chiffré (ex: 3h gagnées/semaine, 0 erreur de saisie).",
+  "quick_wins": ["Étape X → action automatisée concrète", "Étape Y → action automatisée concrète", "Étape Z → action automatisée concrète"],
+  "approach": "no-code ou sur-mesure (choisis UN seul, cohérent avec solution)",
+  "solution": "1 phrase cohérente avec approach : si no-code → cite Make ou Zapier ; si sur-mesure → cite agent IA ProactifSystème. Inclut un gain chiffré."
+}
+
+Règle : approach et solution doivent être COHÉRENTS. Si le processus est simple/répétitif → no-code. Si complexe/décisionnel → sur-mesure.`
       }],
       max_tokens: 350,
       temperature: 0.3,
