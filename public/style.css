@@ -97,16 +97,20 @@ a { color: inherit; text-decoration: none; }
 }
 
 .brand {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 1.35rem;
-  font-weight: 800;
-  color: #fff;
-  letter-spacing: 0.5px;
-  transition: color 0.2s;
+  display: inline-flex;
+  align-items: center;
   flex-shrink: 0;
+  transition: opacity 0.2s;
 }
 
-.brand:hover { color: var(--blue); }
+.brand:hover { opacity: 0.85; }
+
+.brand-logo {
+  height: 40px;
+  width: auto;
+  display: block;
+  border-radius: 8px;
+}
 
 .links {
   display: flex;
