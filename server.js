@@ -396,7 +396,8 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
       email = '',
       company = '',
       phone = '',
-      message = ''
+      message = '',
+      processId = ''
     } = req.body || {};
 
     // 🔓 Captcha désactivé temporairement
@@ -425,28 +426,50 @@ app.post('/api/lead', leadLimiter, async (req, res) => {
       userAgent: req.get('user-agent')
     };
 
+    // Récupère le processus analysé si fourni
+    let processBlock = '';
+    if (processId) {
+      try {
+        const allProc = await readProcesses();
+        const proc = allProc[processId];
+        if (proc) {
+          const stepsHtml = proc.steps.map(s =>
+            `<li><strong>${s.index}. ${s.title}</strong>${s.description ? ' — ' + s.description : ''}</li>`
+          ).join('');
+          const analysisText = proc.automation_proposal?.markdown || '';
+          const analysisHtml = analysisText
+            ? `<h3 style="color:#4f46e5;">Analyse d'automatisation IA</h3>
+               <pre style="background:#f4f4f4;padding:14px;border-radius:6px;white-space:pre-wrap;font-size:13px;line-height:1.6;">${analysisText}</pre>`
+            : '';
+          processBlock = `
+    <hr>
+    <h3 style="color:#4f46e5;">Processus analysé : ${proc.title}</h3>
+    <ul style="padding-left:18px;line-height:1.8;">${stepsHtml}</ul>
+    ${analysisHtml}`;
+        }
+      } catch {}
+    }
+
     // Sauvegarde en file
     await withFileQueue(LEADS_PATH, async () => {
       const leads = await readJSON(LEADS_PATH);
       leads.push(lead);
       await atomicWriteJSON(LEADS_PATH, leads);
     });
-    // ─────────────────────────────────────────────
-    //   Envoi email IONOS : notification + confirmation
-    // ─────────────────────────────────────────────
 
     // === Email Notification vers toi (Admin) ===
     await transporter.sendMail({
       from: `"ProactifSystème" <${process.env.FROM_EMAIL}>`,
       to: process.env.ADMIN_EMAIL,
-      subject: "🔔 Nouveau lead reçu sur ProactifSystème",
+      subject: "🔔 Nouveau devis demandé sur ProactifSystème",
       html: `
-    <h2>Nouveau message reçu :</h2>
+    <h2>Demande de devis reçue :</h2>
     <p><strong>Nom :</strong> ${cleanName}</p>
     <p><strong>Email :</strong> ${normalizedEmail}</p>
-    <p><strong>Entreprise :</strong> ${lead.company || "-"} </p>
-    <p><strong>Téléphone :</strong> ${lead.phone || "-"} </p>
-    <p><strong>Message :</strong><br>${lead.message || "(vide)"} </p>
+    <p><strong>Entreprise :</strong> ${lead.company || "-"}</p>
+    <p><strong>Téléphone :</strong> ${lead.phone || "-"}</p>
+    <p><strong>Message :</strong><br>${lead.message || "(vide)"}</p>
+    ${processBlock}
     <hr>
     <p style="font-size:12px;color:#888;">Reçu automatiquement via ProactifSystème</p>
   `

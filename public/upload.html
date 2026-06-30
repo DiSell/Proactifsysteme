@@ -550,6 +550,7 @@
       const p = data.process;
 
       currentProcessTitle = p.title;
+      currentProcessId = p.id;
       document.getElementById('detail-title').textContent = p.title;
 
       // Bloc automatisation — régénéré à chaque ouverture pour rester cohérent
@@ -611,6 +612,7 @@
 
     /* ─── Devis ─── */
     let currentProcessTitle = '';
+    let currentProcessId = '';
 
     document.getElementById('btn-show-quote').addEventListener('click', () => {
       const form = document.getElementById('quote-form');
@@ -645,7 +647,7 @@
           method: 'POST',
           credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name, email, phone, message, company: '' })
+          body: JSON.stringify({ name, email, phone, message, company: '', processId: currentProcessId })
         });
         if (!res.ok) throw new Error();
         status.style.color = '#5fff96';
