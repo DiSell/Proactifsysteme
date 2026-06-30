@@ -177,6 +177,61 @@
       padding: 28px;
       margin-top: 24px;
     }
+    /* ── Devis CTA ── */
+    .quote-cta {
+      margin-top: 32px;
+      border-top: 1px solid var(--bd);
+      padding-top: 24px;
+    }
+    .quote-cta h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      margin: 0 0 6px;
+      color: var(--text);
+    }
+    .quote-cta p {
+      font-size: .88rem;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+    .quote-form {
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 12px;
+    }
+    .quote-form input, .quote-form textarea {
+      background: #0b1220;
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: inherit;
+      font-size: .9rem;
+      padding: 10px 14px;
+      outline: none;
+      transition: border-color .2s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .quote-form input:focus, .quote-form textarea:focus { border-color: var(--accent1); }
+    .quote-form textarea { min-height: 80px; resize: vertical; }
+    .btn-quote {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, #5bd6ff, #9b7bff);
+      color: #060c1a;
+      border: none;
+      border-radius: 8px;
+      padding: 11px 24px;
+      font-size: .95rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: opacity .2s, transform .15s;
+    }
+    .btn-quote:hover { opacity: .9; transform: translateY(-1px); }
+    .btn-quote:disabled { opacity: .5; cursor: not-allowed; }
+    .quote-status { font-size: .88rem; min-height: 18px; margin-top: 4px; }
     #detail-panel h2 { margin: 0 0 6px; font-size: 1.3rem; }
     .close-detail {
       float: right;
@@ -300,6 +355,26 @@
       <h2 id="detail-title"></h2>
       <p id="detail-meta" style="color:var(--muted);font-size:.85rem;margin:0 0 18px;"></p>
       <ul class="steps-list" id="detail-steps"></ul>
+
+      <!-- CTA devis -->
+      <div class="quote-cta">
+        <h3>Vous souhaitez automatiser ce processus ?</h3>
+        <p>Obtenez un devis personnalisé — notre équipe analyse votre processus et vous propose une solution sur mesure.</p>
+        <button class="btn-quote" id="btn-show-quote">
+          Obtenir un devis gratuit
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </button>
+        <div class="quote-form" id="quote-form">
+          <input type="text"  id="q-name"  placeholder="Votre nom" autocomplete="name" />
+          <input type="email" id="q-email" placeholder="Votre email" autocomplete="email" />
+          <input type="tel"   id="q-phone" placeholder="Téléphone (ex: +33 6 12 34 56 78)" autocomplete="tel" />
+          <textarea id="q-message"></textarea>
+          <button class="btn-quote" id="btn-send-quote" type="button">
+            Envoyer ma demande de devis
+          </button>
+          <div class="quote-status" id="quote-status"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -449,7 +524,13 @@
       const data = await res.json();
       const p = data.process;
 
+      currentProcessTitle = p.title;
       document.getElementById('detail-title').textContent = p.title;
+      document.getElementById('quote-form').style.display = 'none';
+      document.getElementById('quote-status').textContent = '';
+      document.getElementById('btn-send-quote').style.display = '';
+      document.getElementById('btn-send-quote').disabled = false;
+      document.getElementById('btn-show-quote').style.display = '';
       document.getElementById('detail-meta').textContent =
         `${p.steps.length} étape(s) · ${p.schemas.length} schéma(s) · créé le ${new Date(p.createdAt).toLocaleString('fr-FR')}`;
 
@@ -523,6 +604,56 @@
 
     document.getElementById('close-detail').addEventListener('click', () => {
       document.getElementById('detail-panel').style.display = 'none';
+    });
+
+    /* ─── Devis ─── */
+    let currentProcessTitle = '';
+
+    document.getElementById('btn-show-quote').addEventListener('click', () => {
+      const form = document.getElementById('quote-form');
+      const isVisible = form.style.display === 'flex';
+      form.style.display = isVisible ? 'none' : 'flex';
+      if (!isVisible) {
+        document.getElementById('q-message').value =
+          `Bonjour, j'ai analysé mon processus « ${currentProcessTitle} » via votre outil et je souhaite obtenir un devis pour l'automatiser.`;
+        document.getElementById('q-name').focus();
+      }
+    });
+
+    document.getElementById('btn-send-quote').addEventListener('click', async () => {
+      const name    = document.getElementById('q-name').value.trim();
+      const email   = document.getElementById('q-email').value.trim();
+      const phone   = document.getElementById('q-phone').value.trim();
+      const message = document.getElementById('q-message').value.trim();
+      const status  = document.getElementById('quote-status');
+
+      if (!name || !email || !phone) {
+        status.style.color = '#ff6b6b';
+        status.textContent = 'Merci de renseigner votre nom, email et téléphone.';
+        return;
+      }
+
+      const btn = document.getElementById('btn-send-quote');
+      btn.disabled = true;
+      btn.textContent = 'Envoi…';
+
+      try {
+        const res = await fetch(`${API}/api/lead`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name, email, phone, message, company: '' })
+        });
+        if (!res.ok) throw new Error();
+        status.style.color = '#5fff96';
+        status.textContent = '✅ Demande envoyée ! Nous vous répondons sous 24h.';
+        btn.style.display = 'none';
+      } catch {
+        status.style.color = '#ff6b6b';
+        status.textContent = 'Erreur lors de l\'envoi. Réessayez ou contactez-nous par email.';
+        btn.disabled = false;
+        btn.textContent = 'Envoyer ma demande de devis';
+      }
     });
 
     function esc(str) {
