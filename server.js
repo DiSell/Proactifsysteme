@@ -928,33 +928,86 @@ app.post('/api/process/:id/automate', processLimiter, async (req, res) => {
 
     const stepsText = p.steps.map(s => `${s.index}. ${s.title} — ${s.description || ''}`).join('\n');
 
-    const result = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [{
-        role: 'user',
-        content: `Tu es un expert en automatisation pour ProactifSystème (solutions IA sur mesure).
+    const prompt = `Tu es un expert en automatisation de processus métier, architecture logicielle, IA générative et intégrations API.
+
+Ta mission est d'analyser un processus fourni par l'utilisateur et d'identifier les étapes réellement automatisables.
+
+Consignes importantes :
+- Ne jamais inventer de chiffres de gain de temps, pourcentage d'amélioration, économies ou réduction d'erreurs.
+- Ne jamais affirmer qu'un outil précis est obligatoire. Propose n8n, Make, Zapier, développement sur mesure ou API selon le contexte.
+- Distingue clairement les tâches humaines, les tâches automatisables et les tâches qui nécessitent une validation humaine.
+- Reste précis, professionnel et orienté solution.
+- Ne répète pas simplement le processus : transforme-le en proposition d'automatisation concrète.
+- Pour les processus techniques, identifie les éléments comme API, validation de données, base de données, webhooks, authentification, notifications, statuts, journalisation et sécurité.
+- Si une information manque, indique une hypothèse ou pose une question, sans inventer.
 
 Processus : "${p.title}"
 Étapes :
-${stepsText.slice(0, 2000)}
+${stepsText.slice(0, 3000)}
 
-Génère une proposition d'automatisation percutante pour convaincre le prospect de demander un devis.
-Retourne UNIQUEMENT ce JSON valide :
-{
-  "summary": "2 phrases : quelles étapes sont automatisables et le gain concret chiffré (ex: 3h gagnées/semaine, 0 erreur de saisie).",
-  "quick_wins": ["Étape X → action automatisée concrète", "Étape Y → action automatisée concrète", "Étape Z → action automatisée concrète"],
-  "approach": "no-code ou sur-mesure (choisis UN seul, cohérent avec solution)",
-  "solution": "1 phrase cohérente avec approach : si no-code → cite Make ou Zapier ; si sur-mesure → cite agent IA ProactifSystème. Inclut un gain chiffré."
-}
+Réponds obligatoirement avec cette structure :
 
-Règle : approach et solution doivent être COHÉRENTS. Si le processus est simple/répétitif → no-code. Si complexe/décisionnel → sur-mesure.`
-      }],
-      max_tokens: 350,
-      temperature: 0.3,
-      response_format: { type: 'json_object' }
+## Résumé de l'automatisation possible
+Un court paragraphe expliquant ce qui peut être automatisé et ce qui doit rester sous contrôle humain.
+
+## Étapes automatisables
+Pour chaque étape automatisable :
+- Numéro et nom de l'étape
+- Action automatisée
+- Déclencheur
+- Données utilisées
+- Résultat attendu
+- Validation humaine nécessaire : oui ou non
+
+## Workflow recommandé
+Présente le flux sous cette forme :
+
+Déclencheur
+↓
+Action automatisée
+↓
+Analyse / traitement
+↓
+Notification ou décision
+↓
+Enregistrement / suivi
+
+## Technologies possibles
+Liste les options adaptées parmi :
+- n8n
+- Make
+- Zapier
+- API REST
+- Webhooks
+- Node.js / Express
+- MongoDB ou PostgreSQL
+- IA générative
+- E-mail, Slack, Discord, CRM
+
+Explique brièvement pourquoi elles sont adaptées, sans imposer une solution.
+
+## Points de vigilance
+Liste les risques ou contrôles nécessaires :
+- protection des données ;
+- validation des données ;
+- erreurs d'IA ;
+- droits d'accès ;
+- journalisation ;
+- validation humaine ;
+- délais et relances.
+
+## Recommandation finale
+Donne une recommandation réaliste, sans chiffres inventés.`;
+
+    const result = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [{ role: 'user', content: prompt }],
+      max_tokens: 1400,
+      temperature: 0.3
     });
 
-    const ap = JSON.parse(result.choices[0].message.content);
+    const markdown = result.choices[0]?.message?.content?.trim() || '';
+    const ap = { markdown };
 
     await withFileQueue(PROCESSES_PATH, async () => {
       const fresh = await readProcesses();

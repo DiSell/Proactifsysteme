@@ -190,28 +190,17 @@
       align-items: center;
       gap: 7px;
     }
-    .auto-proposal p { font-size: .88rem; color: var(--text); margin: 0 0 10px; line-height: 1.55; }
-    .auto-proposal ul { margin: 0 0 10px; padding-left: 18px; }
-    .auto-proposal li { font-size: .85rem; color: #c8d4e8; margin-bottom: 4px; }
-    .auto-solution {
-      font-size: .85rem;
-      color: var(--accent2);
-      font-weight: 600;
-      border-top: 1px solid rgba(155,123,255,0.2);
-      padding-top: 8px;
-      margin-top: 4px;
-    }
-    .ap-badge {
-      font-size: .72rem;
+    #ap-content h2 {
+      font-size: .92rem;
       font-weight: 700;
-      background: rgba(155,123,255,.2);
-      border: 1px solid rgba(155,123,255,.4);
-      color: var(--accent2);
-      border-radius: 20px;
-      padding: 2px 10px;
-      vertical-align: middle;
-      margin-left: 6px;
+      color: var(--accent1);
+      margin: 16px 0 6px;
     }
+    #ap-content h2:first-child { margin-top: 0; }
+    #ap-content p { font-size: .88rem; color: var(--text); margin: 0 0 10px; line-height: 1.6; }
+    #ap-content ul { margin: 0 0 10px; padding-left: 18px; }
+    #ap-content li { font-size: .85rem; color: #c8d4e8; margin-bottom: 4px; }
+    #ap-content strong { color: #fff; }
     /* ── Detail panel ── */
     #detail-panel {
       display: none;
@@ -384,10 +373,8 @@
 
       <!-- Bloc proposition d'automatisation -->
       <div class="auto-proposal" id="auto-proposal-block" style="display:none;">
-        <h3>⚡ Proposition d'automatisation <span class="ap-badge" id="ap-approach" style="display:none;"></span></h3>
-        <p id="ap-summary"></p>
-        <ul id="ap-quickwins"></ul>
-        <p class="auto-solution" id="ap-solution"></p>
+        <h3>⚡ Analyse d'automatisation</h3>
+        <div id="ap-content"></div>
       </div>
 
       <ul class="steps-list" id="detail-steps"></ul>
@@ -568,10 +555,7 @@
       // Bloc automatisation — régénéré à chaque ouverture pour rester cohérent
       const apEl = document.getElementById('auto-proposal-block');
       apEl.style.display = 'block';
-      document.getElementById('ap-summary').textContent = '⏳ Génération de votre proposition…';
-      document.getElementById('ap-quickwins').innerHTML = '';
-      document.getElementById('ap-solution').textContent = '';
-      document.getElementById('ap-approach').style.display = 'none';
+      document.getElementById('ap-content').innerHTML = '<p>⏳ Génération de l\'analyse d\'automatisation…</p>';
       fetch(`${API}/api/process/${id}/automate`, { method: 'POST', credentials: 'include' })
         .then(r => r.json())
         .then(data => { if (data.automation_proposal) showProposal(data.automation_proposal); else apEl.style.display = 'none'; })
@@ -678,16 +662,23 @@
     function showProposal(ap) {
       const apEl = document.getElementById('auto-proposal-block');
       apEl.style.display = 'block';
-      document.getElementById('ap-summary').textContent = ap.summary || '';
-      document.getElementById('ap-quickwins').innerHTML = (ap.quick_wins || []).map(w => `<li>${esc(w)}</li>`).join('');
-      document.getElementById('ap-solution').textContent = ap.solution || '';
-      const badge = document.getElementById('ap-approach');
-      if (ap.approach) {
-        badge.textContent = ap.approach === 'no-code' ? '🔌 No-code' : '⚙️ Sur mesure';
-        badge.style.display = 'inline-flex';
-      } else {
-        badge.style.display = 'none';
-      }
+      document.getElementById('ap-content').innerHTML = renderMarkdown(ap.markdown || '');
+    }
+
+    function renderMarkdown(text) {
+      let h = String(text)
+        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      h = h.replace(/^##\s+(.+)$/gm, '<h2>$1</h2>');
+      h = h.replace(/^###\s+(.+)$/gm, '<h2>$1</h2>');
+      h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      h = h.replace(/^[-*]\s+(.+)$/gm, '<li>$1</li>');
+      h = h.replace(/(<li>[\s\S]*?<\/li>)(\n<li>[\s\S]*?<\/li>)*/g, m => `<ul>${m}</ul>`);
+      h = h.split(/\n{2,}/).map(p => {
+        p = p.trim();
+        if (!p || p.startsWith('<h') || p.startsWith('<ul')) return p;
+        return `<p>${p.replace(/\n/g,'<br>')}</p>`;
+      }).join('');
+      return h;
     }
 
     function esc(str) {

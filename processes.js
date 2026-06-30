@@ -41,12 +41,6 @@ ${text.slice(0, 4000)}
 Structure JSON attendue:
 {
   "title": "titre général du processus",
-  "automation_proposal": {
-    "summary": "2 phrases : quelles étapes automatisables et gain concret chiffré (ex: 3h/semaine, 0 erreur de saisie).",
-    "quick_wins": ["Étape X → action automatisée concrète", "Étape Y → action automatisée concrète", "Étape Z → action automatisée concrète"],
-    "approach": "no-code ou sur-mesure (UN seul, cohérent avec solution)",
-    "solution": "1 phrase cohérente avec approach : si no-code → Make ou Zapier ; si sur-mesure → agent IA ProactifSystème. Gain chiffré inclus."
-  },
   "steps": [
     { "index": 1, "title": "titre court de l'étape", "description": "description complète" }
   ],
@@ -59,8 +53,7 @@ Règles:
 - Extrais toutes les étapes (numérotées, tirets, Étape X, Step X, etc.)
 - Extrais les schémas/diagrammes/flux mentionnés explicitement
 - Si aucun schéma mentionné: schemas = []
-- title = titre global du processus (déduit du contenu si absent)
-- automation_proposal : identifie les 3 tâches les plus répétitives à automatiser. approach et solution doivent être COHÉRENTS : processus simple/répétitif → no-code (Make/Zapier) ; processus complexe/décisionnel → sur-mesure (agent IA ProactifSystème)`
+- title = titre global du processus (déduit du contenu si absent)`
     }],
     max_tokens: 1500,
     temperature: 0.1,
