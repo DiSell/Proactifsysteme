@@ -452,11 +452,11 @@
         });
         const data = await res.json();
         if (!res.ok) throw new Error(data.error || 'Erreur serveur');
-        showStatus(`✅ Processus « ${data.process.title} » créé avec ${data.process.steps.length} étape(s).`, 'success');
         document.getElementById('process-text').value = '';
         selectedFiles = [];
         renderFileList();
         loadProcesses();
+        openDetail(data.process.id);
       } catch (e) {
         showStatus('Erreur : ' + e.message, 'error');
       } finally {
