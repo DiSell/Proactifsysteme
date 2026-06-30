@@ -348,6 +348,12 @@
     if (q.startsWith('/perplexity ') || q.startsWith('/openai ')) {
       q = q.replace(/^\/(perplexity|openai)\s+/, '');
     }
+    // Supprime le message d'accueil avec carousel dès le premier message
+    const welcomeCarousel = logBox.querySelector('.capabilities-carousel');
+    if (welcomeCarousel) {
+      const welcomeMsg = welcomeCarousel.closest('.msg.bot');
+      if (welcomeMsg) welcomeMsg.remove();
+    }
     pushMsg(q, 'you');
     input.value = '';
     showTyping();
