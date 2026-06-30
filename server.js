@@ -42,7 +42,6 @@ app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
-app.get('/favicon.ico', (req, res) => res.status(204).end());
 
 /* ────────────────────────────────────────────────────────────
    Helmet (CSP)
