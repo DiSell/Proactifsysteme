@@ -301,38 +301,6 @@
     .step-title { font-weight: 600; margin-bottom: 3px; }
     .step-desc  { color: var(--muted); font-size: .88rem; }
     .step-img   { max-width: 100%; border-radius: 6px; margin-top: 8px; display: block; }
-    .btn-explain {
-      margin-top: 8px;
-      background: rgba(91,214,255,.1);
-      border: 1px solid rgba(91,214,255,.25);
-      color: var(--accent1);
-      border-radius: 6px;
-      padding: 5px 14px;
-      font-size: .82rem;
-      cursor: pointer;
-      transition: background .15s;
-    }
-    .btn-explain:hover { background: rgba(91,214,255,.2); }
-    .explain-box {
-      margin-top: 10px;
-      background: rgba(0,0,0,.3);
-      border-radius: 8px;
-      padding: 14px 16px;
-      font-size: .88rem;
-      color: var(--text);
-      line-height: 1.6;
-      display: none;
-    }
-    .explain-box h3, .explain-box h4, .explain-box h5 {
-      color: var(--accent1);
-      margin: 10px 0 4px;
-      font-size: .9rem;
-    }
-    .explain-box h3:first-child, .explain-box h4:first-child { margin-top: 0; }
-    .explain-box p { margin: 6px 0; }
-    .explain-box ul { padding-left: 18px; margin: 6px 0; }
-    .explain-box li { margin-bottom: 4px; }
-    .explain-box strong { color: #c8d4e8; }
     #empty-msg {
       text-align: center;
       color: var(--muted);
@@ -615,8 +583,6 @@
             <div class="step-title">${esc(s.title)}</div>
             <div class="step-desc">${esc(s.description || '')}</div>
             ${s.imageUrl ? `<img class="step-img" src="${API}${esc(s.imageUrl)}" alt="image étape ${s.index}">` : ''}
-            <button class="btn-explain" data-pid="${p.id}" data-type="step" data-idx="${s.index}">💡 Expliquer cette étape</button>
-            <div class="explain-box" id="exp-step-${s.index}"></div>
           </div>
         `;
         ul.appendChild(li);
@@ -635,42 +601,12 @@
             <div class="step-body">
               <div class="step-title">${esc(s.title)}</div>
               <div class="step-desc">${esc(s.description || '')}</div>
-              <button class="btn-explain" data-pid="${p.id}" data-type="schema" data-idx="${s.index}">💡 Expliquer ce schéma</button>
-              <div class="explain-box" id="exp-schema-${s.index}"></div>
             </div>
           `;
           ul.appendChild(li);
         });
       }
 
-      ul.querySelectorAll('.btn-explain').forEach(btn => {
-        btn.addEventListener('click', () => explainItem(btn));
-      });
-    }
-
-    async function explainItem(btn) {
-      const { pid, type, idx } = btn.dataset;
-      const box = document.getElementById(`exp-${type}-${idx}`);
-      if (box.style.display === 'block') { box.style.display = 'none'; return; }
-      btn.disabled = true;
-      btn.textContent = '⏳ Génération…';
-      try {
-        const res = await fetch(`${API}/api/process/${pid}/explain`, {
-          method: 'POST',
-          credentials: 'include',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type, index: parseInt(idx) })
-        });
-        const data = await res.json();
-        box.innerHTML = renderMarkdown(data.explanation || 'Aucune explication générée.');
-        box.style.display = 'block';
-      } catch {
-        box.textContent = 'Erreur lors de la génération.';
-        box.style.display = 'block';
-      } finally {
-        btn.disabled = false;
-        btn.innerHTML = '💡 Expliquer';
-      }
     }
 
     document.getElementById('close-detail').addEventListener('click', () => {
@@ -729,30 +665,6 @@
 
     function esc(str) {
       return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-    }
-
-    function renderMarkdown(text) {
-      let h = text
-        .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-      // Titres
-      h = h.replace(/^#### (.+)$/gm, '<h5>$1</h5>');
-      h = h.replace(/^### (.+)$/gm,  '<h4>$1</h4>');
-      h = h.replace(/^## (.+)$/gm,   '<h3>$1</h3>');
-      // Gras
-      h = h.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-      // Items de liste
-      h = h.replace(/^[-*] (.+)$/gm, '<li>$1</li>');
-      // Numérotés
-      h = h.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
-      // Regroupe les <li> consécutifs
-      h = h.replace(/(<li>[\s\S]*?<\/li>)(\n<li>[\s\S]*?<\/li>)*/g, m => `<ul>${m}</ul>`);
-      // Paragraphes
-      h = h.split(/\n{2,}/).map(p => {
-        p = p.trim();
-        if (!p || p.startsWith('<h') || p.startsWith('<ul')) return p;
-        return `<p>${p.replace(/\n/g,'<br>')}</p>`;
-      }).join('');
-      return h;
     }
 
     loadProcesses();
