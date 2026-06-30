@@ -401,19 +401,34 @@
    CAROUSEL VERTICAL
    ════════════════════════════════════════════ */
 .msg-welcome {
-    margin-top: auto;
+    margin: auto;
     padding: 8px 4px;
+    width: 100%;
 }
 
 .capabilities-carousel {
-    height: 40px;
+    height: 120px;
     overflow: hidden;
     position: relative;
+    -webkit-mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 28%,
+        black 72%,
+        transparent 100%
+    );
+    mask-image: linear-gradient(
+        to bottom,
+        transparent 0%,
+        black 28%,
+        black 72%,
+        transparent 100%
+    );
 }
 
 .carousel-track {
     display: block;
-    animation: carouselUp 18s linear infinite;
+    animation: carouselUp 20s linear infinite;
 }
 
 .carousel-item {
@@ -425,7 +440,7 @@
     padding-left: 6px;
 }
 
-/* Scroll linéaire continu vers le haut — 6 items × 40px = 240px (liste dupliquée pour boucle sans saut) */
+/* 6 items × 40px = 240px (liste dupliquée pour boucle sans saut) */
 @keyframes carouselUp {
     0%   { transform: translateY(0); }
     100% { transform: translateY(-240px); }
@@ -516,7 +531,7 @@
         border-radius: 14px;
     }
 
-    .capabilities-carousel { height: 32px; margin-top: 6px; }
+    .capabilities-carousel { height: 96px; }
 
     .carousel-item {
         font-size: 0.78rem;
@@ -524,7 +539,13 @@
         height: 32px;
     }
 
-    .carousel-track { animation-duration: 12s; }
+    /* 6 items × 32px = 192px */
+    @keyframes carouselUp {
+        0%   { transform: translateY(0); }
+        100% { transform: translateY(-192px); }
+    }
+
+    .carousel-track { animation-duration: 16s; }
 }
 
 @media (max-width: 360px) {
