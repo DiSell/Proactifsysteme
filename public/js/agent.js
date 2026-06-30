@@ -148,7 +148,13 @@
     <div class="carousel-track">
       <div class="carousel-item">✨ Je me base sur des données sourcées pour vous répondre</div>
       <div class="carousel-item">🎯 J'apporte des solutions adaptées à vos besoins métier</div>
-      <div class="carousel-item">📊 Je peux vous aider analyser  les tendances du marché en temps réel</div>
+      <div class="carousel-item">📊 Je peux vous aider analyser les tendances du marché en temps réel</div>
+      <div class="carousel-item">💡 Je qualifie vos demandes pour vous orienter efficacement</div>
+      <div class="carousel-item">🌐 J'accède aux informations les plus récentes du web</div>
+      <div class="carousel-item">🚀 Je propose des recommandations personnalisées</div>
+      <div class="carousel-item">✨ Je me base sur des données sourcées pour vous répondre</div>
+      <div class="carousel-item">🎯 J'apporte des solutions adaptées à vos besoins métier</div>
+      <div class="carousel-item">📊 Je peux vous aider analyser les tendances du marché en temps réel</div>
       <div class="carousel-item">💡 Je qualifie vos demandes pour vous orienter efficacement</div>
       <div class="carousel-item">🌐 J'accède aux informations les plus récentes du web</div>
       <div class="carousel-item">🚀 Je propose des recommandations personnalisées</div>

@@ -409,7 +409,7 @@
 
 .carousel-track {
     display: block;
-    animation: carouselVertical 20s linear infinite;
+    animation: carouselUp 18s linear infinite;
 }
 
 .carousel-item {
@@ -421,14 +421,10 @@
     padding-left: 6px;
 }
 
-@keyframes carouselVertical {
+/* Scroll linéaire continu vers le haut — 6 items × 40px = 240px (liste dupliquée pour boucle sans saut) */
+@keyframes carouselUp {
     0%   { transform: translateY(0); }
-    15%  { transform: translateY(-40px); }
-    30%  { transform: translateY(-80px); }
-    45%  { transform: translateY(-120px); }
-    60%  { transform: translateY(-160px); }
-    75%  { transform: translateY(-200px); }
-    100% { transform: translateY(0); }
+    100% { transform: translateY(-240px); }
 }
 
 /* ═══════════════════════════════════════════
@@ -524,7 +520,7 @@
         height: 32px;
     }
 
-    .carousel-track { animation-duration: 14s; }
+    .carousel-track { animation-duration: 12s; }
 }
 
 @media (max-width: 360px) {
