@@ -8,10 +8,14 @@
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/style.css?v=3" />
   <style>
+    :root {
+      --accent1: #5bd6ff;
+      --accent2: #9b7bff;
+    }
     .page-wrap {
-      max-width: 860px;
+      max-width: 700px;
       margin: 0 auto;
-      padding: 40px 20px 80px;
+      padding: 32px 20px 80px;
     }
     .back-link {
       display: inline-flex;
@@ -48,7 +52,7 @@
     }
     textarea#process-text {
       width: 100%;
-      min-height: 160px;
+      min-height: 120px;
       background: #0b1220;
       border: 1px solid var(--bd);
       border-radius: 8px;
@@ -62,10 +66,10 @@
     }
     textarea#process-text:focus { border-color: var(--accent1); }
     .file-zone {
-      margin-top: 16px;
+      margin-top: 14px;
       border: 2px dashed var(--bd);
       border-radius: 8px;
-      padding: 22px;
+      padding: 16px;
       text-align: center;
       cursor: pointer;
       transition: border-color .2s, background .2s;
@@ -99,21 +103,22 @@
       line-height: 1;
     }
     .btn-primary {
-      margin-top: 20px;
+      margin-top: 16px;
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      background: linear-gradient(135deg, var(--accent1), var(--accent2));
-      color: #000;
+      background: #3b82f6;
+      color: #fff;
       border: none;
       border-radius: 8px;
-      padding: 12px 28px;
-      font-size: 1rem;
+      padding: 11px 26px;
+      font-size: .95rem;
       font-weight: 700;
       cursor: pointer;
-      transition: opacity .2s;
+      transition: background .2s, transform .15s;
     }
-    .btn-primary:disabled { opacity: .5; cursor: not-allowed; }
+    .btn-primary:hover { background: #2563eb; transform: translateY(-1px); }
+    .btn-primary:disabled { opacity: .5; cursor: not-allowed; transform: none; }
     /* ── Status banner ── */
     #status {
       display: none;
@@ -310,11 +315,16 @@
   </style>
 </head>
 <body>
-  <header class="hero" style="min-height:0; padding-bottom:0;">
-    <nav class="nav">
-      <div class="brand">ProactifSystem</div>
+  <header class="site-header">
+    <nav class="nav" aria-label="Navigation principale">
+      <a href="/" class="brand" aria-label="Proactifsystem — Accueil">
+        <img src="/favicon-192.png" alt="" class="brand-logo" aria-hidden="true" />
+        Proactifsystem
+      </a>
       <div class="links">
         <a href="/">Accueil</a>
+        <a href="#solutions">Solutions</a>
+        <a href="/#contact" class="nav-cta">Contact</a>
       </div>
     </nav>
   </header>
