@@ -139,18 +139,18 @@
     carousel.className = 'capabilities-carousel';
     carousel.innerHTML = `
     <div class="carousel-track">
-      <div class="carousel-item">✨ Je me base sur des données sourcées pour vous répondre</div>
-      <div class="carousel-item">🎯 J'apporte des solutions adaptées à vos besoins métier</div>
-      <div class="carousel-item">📊 Je peux vous aider analyser les tendances du marché en temps réel</div>
-      <div class="carousel-item">💡 Je qualifie vos demandes pour vous orienter efficacement</div>
-      <div class="carousel-item">🌐 J'accède aux informations les plus récentes du web</div>
-      <div class="carousel-item">🚀 Je propose des recommandations personnalisées</div>
-      <div class="carousel-item">✨ Je me base sur des données sourcées pour vous répondre</div>
-      <div class="carousel-item">🎯 J'apporte des solutions adaptées à vos besoins métier</div>
-      <div class="carousel-item">📊 Je peux vous aider analyser les tendances du marché en temps réel</div>
-      <div class="carousel-item">💡 Je qualifie vos demandes pour vous orienter efficacement</div>
-      <div class="carousel-item">🌐 J'accède aux informations les plus récentes du web</div>
-      <div class="carousel-item">🚀 Je propose des recommandations personnalisées</div>
+      <div class="carousel-item">🤖 Agent commercial IA disponible 24h/24 pour qualifier vos prospects</div>
+      <div class="carousel-item">⚡ Automatisez vos tâches répétitives — emails, CRM, workflows</div>
+      <div class="carousel-item">📋 Déposez votre processus métier et obtenez une analyse d'automatisation</div>
+      <div class="carousel-item">📊 Dashboards et KPIs assistés par l'IA pour décider plus vite</div>
+      <div class="carousel-item">🔧 Applications et logiciels sur mesure pour votre métier</div>
+      <div class="carousel-item">💬 Chatbots et agents IA intégrés à votre site ou CRM en quelques jours</div>
+      <div class="carousel-item">🤖 Agent commercial IA disponible 24h/24 pour qualifier vos prospects</div>
+      <div class="carousel-item">⚡ Automatisez vos tâches répétitives — emails, CRM, workflows</div>
+      <div class="carousel-item">📋 Déposez votre processus métier et obtenez une analyse d'automatisation</div>
+      <div class="carousel-item">📊 Dashboards et KPIs assistés par l'IA pour décider plus vite</div>
+      <div class="carousel-item">🔧 Applications et logiciels sur mesure pour votre métier</div>
+      <div class="carousel-item">💬 Chatbots et agents IA intégrés à votre site ou CRM en quelques jours</div>
     </div>
   `;
     div.appendChild(carousel);
@@ -523,20 +523,20 @@
   (() => {
     const faqData = [
       {
-        question: "Comment l'IA peut-elle m'aider dans mon entreprise ?",
-        answer: "Elle automatise vos tâches répétitives, qualifie vos leads et répond à vos clients 24h/24."
+        question: "Qu'est-ce que ProactifSystème peut faire pour mon entreprise ?",
+        answer: "ProactifSystème conçoit des solutions IA sur mesure : chatbots et agents conversationnels, automatisation des tâches répétitives, dashboards et analyse de données, applications métier, et analyse de vos processus pour identifier ce qui peut être automatisé."
       },
       {
-        question: "L'IA peut-elle générer un devis ou une liste de matériel ?",
-        answer: "Oui, à partir de vos plans ou de vos besoins, elle peut générer un métré ou des estimations automatiquement."
+        question: "Comment automatiser un de mes processus métier ?",
+        answer: "Utilisez notre outil gratuit dans l'onglet 'Processus' : déposez votre procédure en texte, l'IA la structure étape par étape et vous propose une piste d'automatisation concrète en quelques secondes."
       },
       {
-        question: "Est-ce que mes données sont confidentielles ?",
-        answer: "Oui, toutes les données sont stockées de façon sécurisée et ne sont jamais partagées."
+        question: "Quel type d'agent IA correspond à mon besoin ?",
+        answer: "Cela dépend de votre objectif : qualification de leads, support client, prise de rendez-vous, réponses aux collaborateurs, conseil e-commerce... Décrivez-moi votre besoin et je vous oriente vers la solution adaptée."
       },
       {
-        question: "Quels outils l'IA peut-elle remplacer ou accélérer ?",
-        answer: "Elle peut s'intégrer avec vos CRM, logiciels de devis, outils d'analyse ou votre site web."
+        question: "Est-ce que mes données sont sécurisées ?",
+        answer: "Oui. Toutes les données sont chiffrées, stockées de manière sécurisée et ne sont jamais partagées avec des tiers."
       }
     ];
     let currentFaqIndex = 0;
