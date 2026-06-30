@@ -129,18 +129,11 @@
     if (!logBox) return;
 
     // 🔁 Supprime les anciens messages d’accueil avec carrousel s’ils existent
-    const oldWelcome = logBox.querySelector('.capabilities-carousel');
-    if (oldWelcome) {
-      const parent = oldWelcome.closest('.msg.bot');
-      if (parent) parent.remove();
-    }
+    const oldWelcome = logBox.querySelector('.msg-welcome');
+    if (oldWelcome) oldWelcome.remove();
 
     const div = document.createElement('div');
-    div.className = 'msg bot';
-
-    const textSpan = document.createElement('span');
-    textSpan.textContent = 'Bonjour ! Je suis l\'agent ProactifSystème. Posez votre question 🙂';
-    div.appendChild(textSpan);
+    div.className = 'msg-welcome';
 
     const carousel = document.createElement('div');
     carousel.className = 'capabilities-carousel';
@@ -355,11 +348,8 @@
       q = q.replace(/^\/(perplexity|openai)\s+/, '');
     }
     // Supprime le message d'accueil avec carousel dès le premier message
-    const welcomeCarousel = logBox.querySelector('.capabilities-carousel');
-    if (welcomeCarousel) {
-      const welcomeMsg = welcomeCarousel.closest('.msg.bot');
-      if (welcomeMsg) welcomeMsg.remove();
-    }
+    const welcomeMsg = logBox.querySelector('.msg-welcome');
+    if (welcomeMsg) welcomeMsg.remove();
     pushMsg(q, 'you');
     input.value = '';
     showTyping();

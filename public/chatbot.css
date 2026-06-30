@@ -400,8 +400,12 @@
 /* ════════════════════════════════════════════
    CAROUSEL VERTICAL
    ════════════════════════════════════════════ */
+.msg-welcome {
+    margin-top: auto;
+    padding: 8px 4px;
+}
+
 .capabilities-carousel {
-    margin-top: 10px;
     height: 40px;
     overflow: hidden;
     position: relative;
