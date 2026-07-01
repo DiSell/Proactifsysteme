@@ -463,8 +463,15 @@
 
 #agent-widget.min #agent-panel {
     width: 360px;
-    height: 500px;
+    height: 52px;
     border-radius: 16px;
+}
+
+#agent-widget.min #agent-log,
+#agent-widget.min #faq-box,
+#agent-widget.min #agent-toolbar,
+#agent-widget.min #agent-form {
+    display: none;
 }
 
 /* Mentions légales (partagé) */
@@ -493,7 +500,7 @@
 
     #agent-widget.min #agent-panel {
         width: 340px;
-        height: 460px;
+        height: 52px;
     }
 
     #agent-widget .bubble {
